@@ -201,7 +201,37 @@ class HDBeacon : HDUPK
 	States
 	{
 		Spawn:
+			TPRT A 20;
+			TPRT A 0 A_SpawnItemEx("HDBeaconMarker", flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
+		SpawnLoop:
 			TPRT AB 20;
 			Loop;
+	}
+}
+
+class HDBeaconMarker : MapMarker
+{
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+
+		Super.Tick();
+	}
+
+	Default
+	{
+		+INVISIBLE
+		+NOINTERACTION
+	}
+
+	States
+	{
+		Spawn:
+			TPRT Z -1;
+			Stop;
 	}
 }
