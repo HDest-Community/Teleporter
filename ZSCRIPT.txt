@@ -49,35 +49,6 @@ class HDTeleporter : HDPickup
 		return BeaconIndex + 1;
 	}
 
-	private action void A_TeleportToBeacon(HDBeacon beacon)
-	{
-		SetOrigin(beacon.pos, true);
-		for (int i = 0; i < 360; ++i)
-		{
-			if (!random(0, 1))
-			{
-				A_SpawnParticle(player.GetColor(), SPF_RELATIVE, random(35, 70), random(2, 4), i, random(8, 48), 0, frandom(0, height), 0, 0, frandom(0.5, 3), 0, 0, frandom(-0.05, 0));
-			}
-			A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
-		}
-		A_PlaySound("HDTeleporter/Teleport", 20);
-	}
-
-	private bool CanTeleport(HDBeacon beacon) const
-	{
-		bool ReturnValue = false;
-		vector3 OldPos = owner.pos;
-
-		SetXYZ(beacon.pos);
-		if (owner.TestMobjLocation())
-		{
-			ReturnValue = true;
-		}
-		SetXYZ(OldPos);
-
-		return ReturnValue;
-	}
-
 	private action void GetFullBatteryIndices(out Array<int> indices)
 	{
 		indices.Clear();
@@ -117,7 +88,7 @@ class HDTeleporter : HDPickup
 		+HDPICKUP.CHEATNOGIVE
 		+HDPICKUP.NOTINPOCKETS
 		+INVENTORY.INVBAR
-		HDPickup.Bulk 30;
+		HDPickup.Bulk 65;
 		Inventory.MaxAmount 5;
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
@@ -170,9 +141,17 @@ class HDTeleporter : HDPickup
 					if (BatteryIndices.Size() >= BatteriesToCronch)
 					{
 						let Beacon = Handler.Beacons[invoker.BeaconIndex];
-						if (invoker.CanTeleport(Beacon))
+						if (Warp(Beacon))
 						{
-							A_TeleportToBeacon(Beacon);
+							for (int i = 0; i < 360; ++i)
+							{
+								if (!random(0, 1))
+								{
+									A_SpawnParticle(player.GetColor(), SPF_RELATIVE, random(35, 70), random(2, 4), i, random(8, 48), 0, frandom(0, height), 0, 0, frandom(0.5, 3), 0, 0, frandom(-0.05, 0));
+								}
+								A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
+							}
+							A_PlaySound("HDTeleporter/Teleport", 20);
 							A_CronchBatteries(BatteryIndices, BatteriesToCronch);
 						}
 						else
@@ -216,6 +195,7 @@ class HDBeacon : HDUPK
 	Default
 	{
 		HDUPK.PickupType "HDTeleporter";
+		HDUPK.PickupMessage "Picked up a portable teleporter.";
 	}
 
 	States
