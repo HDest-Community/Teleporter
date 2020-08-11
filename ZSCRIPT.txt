@@ -136,6 +136,7 @@ class HDTeleporter : HDPickup
 					{
 						bool success; Actor a;
 						[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2, 5, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
+						a.SetShade(player.GetColor());
 						Handler.Beacons.Push(HDBeacon(a));
 						invoker.Amount--;
 					}
@@ -151,7 +152,7 @@ class HDTeleporter : HDPickup
 					if (BatteryIndices.Size() >= BatteriesToCronch)
 					{
 						let Beacon = Handler.Beacons[invoker.BeaconIndex];
-						if (Warp(Beacon))
+						if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
 						{
 							for (int i = 0; i < 360; ++i)
 							{
@@ -202,6 +203,17 @@ class HDBeacon : HDUPK
 		Super.OnDestroy();
 	}
 
+	private void EmitParticles(double height)
+	{
+		for (double i = 0; i < height; i += height / 32)
+		{
+			A_SpawnParticle(fillcolor, SPF_FULLBRIGHT, 1,  8 + i ** 1.18, 0, 0, 0, 3 + i * 3, startalphaf: 0.1);
+		}
+	}
+
+	private PointLight DynLight;
+	private double StartHeight;
+
 	Default
 	{
 		HDUPK.PickupType "HDTeleporter";
@@ -211,10 +223,42 @@ class HDBeacon : HDUPK
 	States
 	{
 		Spawn:
-			TPRT A 20;
-			TPRT A 0 A_SpawnItemEx("HDBeaconMarker", flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
-		SpawnLoop:
-			TPRT AB 20;
+			TPRT A 1
+			{
+				if (vel.length() < 0.1)
+				{
+					A_SpawnItemEx("HDBeaconMarker", flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
+					SetStateLabel("WindUpStart");
+				}
+			}
+			Loop;
+		WindUpStart:
+			TPRT BCDEFG 5;
+		WindUpLoop:
+			TPRT CDEFG 4;
+			TPRT CDEFG 3;
+			TPRT CDEFG 2;
+			TPRT C 0
+			{
+				DynLight = PointLight(Spawn("HDBeaconLight"));
+				DynLight.master = self;
+				DynLight.Args[0] = fillcolor.r;
+				DynLight.Args[1] = fillcolor.g;
+				DynLight.Args[2] = fillcolor.b;
+			}
+		Speen:
+			TPRT CCDDEEFFGG 1
+			{
+				if (StartHeight < 32)
+				{
+					StartHeight += 4;
+					if (DynLight)
+					{
+						DynLight.Args[3] = int(StartHeight * 2);
+					}
+				}
+				EmitParticles(StartHeight);
+			}
 			Loop;
 	}
 }
@@ -243,5 +287,21 @@ class HDBeaconMarker : MapMarker
 		Spawn:
 			TPRT Z -1;
 			Stop;
+	}
+}
+
+class HDBeaconLight : PointLight
+{
+	override void Tick()
+	{
+		if (!master)
+		{
+			Destroy();
+			return;
+		}
+
+		Warp(master, flags: WARPF_NOCHECKPOSITION);
+
+		Super.Tick();
 	}
 }

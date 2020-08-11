@@ -1,7 +1,3 @@
 Code: Accensus
-
-// [Ace] R667 credits below
-Sprites: LucasArts (Dark Forces), Gothic
-Sprite Edit: Gothic
-Idea Base: Land Mines from Stronghold
+Sprites: Hege Cactus
 Sounds: Epic Games (Unreal Tournament '99)
