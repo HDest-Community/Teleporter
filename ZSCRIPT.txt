@@ -216,6 +216,7 @@ class HDBeacon : HDUPK
 
 	Default
 	{
+		Radius 12;
 		HDUPK.PickupType "HDTeleporter";
 		HDUPK.PickupMessage "Picked up a portable teleporter.";
 	}
