@@ -228,13 +228,12 @@ class HDBeacon : HDUPK
 				if (vel.length() < 0.1)
 				{
 					A_SpawnItemEx("HDBeaconMarker", flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
-					SetStateLabel("WindUpStart");
+					SetStateLabel("WindUp");
 				}
 			}
 			Loop;
-		WindUpStart:
-			TPRT BCDEFG 5;
-		WindUpLoop:
+		WindUp:
+			TPRT BCDEFG 4;
 			TPRT CDEFG 4;
 			TPRT CDEFG 3;
 			TPRT CDEFG 2;
