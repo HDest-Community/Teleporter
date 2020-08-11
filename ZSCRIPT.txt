@@ -33,6 +33,15 @@ class HDTeleportHandler : EventHandler
 			}
 		}
 	}
+
+	override void WorldThingSpawned(WorldEvent e)
+	{
+		let TheItem = HDBattery(e.Thing);
+		if (TheItem)
+		{
+			TheItem.ItemsThatUseThis.Push("HDTeleporter");
+		}
+	}
 }
 
 class HDTeleporter : HDPickup
