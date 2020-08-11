@@ -98,6 +98,7 @@ class HDTeleporter : HDPickup
 		+HDPICKUP.NOTINPOCKETS
 		+INVENTORY.INVBAR
 		HDPickup.Bulk 65;
+		HDPickup.RefID "ptp";
 		Inventory.MaxAmount 5;
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
