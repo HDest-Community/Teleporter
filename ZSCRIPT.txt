@@ -75,6 +75,7 @@ class HDTeleporter : HDPickup
 		}
 	}
 
+	// [Ace] This only depletes them now, but I like how "cronch" sounds so I'll keep it.
 	private action void A_CronchBatteries(Array<int> indices, int maxCronch)
 	{
 		let Battery = HDBattery(FindInventory("HDBattery"));
@@ -82,8 +83,7 @@ class HDTeleporter : HDPickup
 		{
 			for (int i = 0; i < indices.Size() && maxCronch > 0; ++i)
 			{
-				Battery.Mags.Delete(indices[i]);
-				Battery.Amount = Battery.Mags.Size();
+				Battery.Mags[indices[i]] = 0;
 				maxCronch--;
 			}
 		}
