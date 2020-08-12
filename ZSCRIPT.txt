@@ -139,7 +139,7 @@ class HDTeleporter : HDPickup
 						double sinp = sin(pitch);
 						double cosp = cos(pitch);
 
-						double XVel = 3 + ((player.cmd.buttons & BT_SPEED ? 15 : 5) * (CheckInventory("PowerStrength", 0) ? 3 : 1)) * cosp;
+						double XVel = 3 + ((player.cmd.buttons & BT_SPEED ? 15 : 2) * (CheckInventory("PowerStrength", 0) ? 3 : 1)) * cosp;
 						double YVel = -(vel.x * sin(angle) + vel.y * cos(angle));
 						double ZVel = (10 * -sinp) * (CheckInventory("PowerStrength", 0) ? 2 : 1);
 
