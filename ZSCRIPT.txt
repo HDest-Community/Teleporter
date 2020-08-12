@@ -160,7 +160,11 @@ class HDTeleporter : HDPickup
 					if (BatteryIndices.Size() >= BatteriesToCronch)
 					{
 						let Beacon = Handler.Beacons[invoker.BeaconIndex];
-						if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
+						if (!Beacon.Armed)
+						{
+							A_Log("Beacon is not armed.");
+						}
+						else if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
 						{
 							for (int i = 0; i < 360; ++i)
 							{
@@ -221,6 +225,7 @@ class HDBeacon : HDUPK
 
 	private PointLight DynLight;
 	private double StartHeight;
+	bool Armed;
 
 	Default
 	{
@@ -254,6 +259,7 @@ class HDBeacon : HDUPK
 				DynLight.Args[0] = fillcolor.r;
 				DynLight.Args[1] = fillcolor.g;
 				DynLight.Args[2] = fillcolor.b;
+				Armed = true;
 			}
 		Speen:
 			TPRT CCDDEEFFGG 1
