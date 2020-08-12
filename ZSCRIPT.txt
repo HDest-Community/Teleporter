@@ -55,7 +55,16 @@ class HDTeleporter : HDPickup
 
 	override int GetSbarNum(int flags)
 	{
+		let HDHud = HDStatusBar(StatusBar);
+		HDHud.SavedColour = IsValidIndex() ? Font.CR_GREEN : Font.CR_SAPPHIRE;
+
 		return BeaconIndex + 1;
+	}
+
+	private bool IsValidIndex() const
+	{
+		let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
+		return BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size();
 	}
 
 	private action void GetFullBatteryIndices(out Array<int> indices)
@@ -129,6 +138,7 @@ class HDTeleporter : HDPickup
 					{
 						invoker.BeaconIndex++;
 					}
+					return false;
 				}
 				else if (player.cmd.buttons & BT_ZOOM)
 				{
@@ -145,44 +155,46 @@ class HDTeleporter : HDPickup
 					a.SetShade(player.GetColor());
 					Handler.Beacons.Push(HDBeacon(a));
 					invoker.Amount--;
+					return false;
 				}
-				else if (invoker.BeaconIndex > -1 && invoker.BeaconIndex < Handler.Beacons.Size())
+
+				if (!invoker.IsValidIndex())
 				{
-					Array<int> BatteryIndices;
-					GetFullBatteryIndices(BatteryIndices);
-					if (BatteryIndices.Size() >= BatteriesToCronch)
+					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.");
+					return false;
+				}
+
+				Array<int> BatteryIndices;
+				GetFullBatteryIndices(BatteryIndices);
+				if (BatteryIndices.Size() < BatteriesToCronch)
+				{
+					A_Log("You need a full battery to do that.");
+					return false;
+				}
+
+				let Beacon = Handler.Beacons[invoker.BeaconIndex];
+				if (!Beacon.Armed)
+				{
+					A_Log("Beacon is not armed.");
+					return false;
+				}
+
+				if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
+				{
+					for (int i = 0; i < 360; ++i)
 					{
-						let Beacon = Handler.Beacons[invoker.BeaconIndex];
-						if (!Beacon.Armed)
+						if (!random(0, 1))
 						{
-							A_Log("Beacon is not armed.");
+							A_SpawnParticle(player.GetColor(), SPF_RELATIVE, random(35, 70), random(2, 4), i, random(8, 48), 0, frandom(0, height), 0, 0, frandom(0.5, 3), 0, 0, frandom(-0.05, 0));
 						}
-						else if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
-						{
-							for (int i = 0; i < 360; ++i)
-							{
-								if (!random(0, 1))
-								{
-									A_SpawnParticle(player.GetColor(), SPF_RELATIVE, random(35, 70), random(2, 4), i, random(8, 48), 0, frandom(0, height), 0, 0, frandom(0.5, 3), 0, 0, frandom(-0.05, 0));
-								}
-								A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
-							}
-							A_PlaySound("HDTeleporter/Teleport", 20);
-							A_CronchBatteries(BatteryIndices, BatteriesToCronch);
-						}
-						else
-						{
-							A_Log("Destination is blocked.");
-						}
+						A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
 					}
-					else
-					{
-						A_Log("You need a full battery to do that.");
-					}
+					A_PlaySound("HDTeleporter/Teleport", 20);
+					A_CronchBatteries(BatteryIndices, BatteriesToCronch);
 				}
 				else
 				{
-					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.");
+					A_Log("Destination is blocked.");
 				}
 
 				return false;
