@@ -135,7 +135,15 @@ class HDTeleporter : HDPickup
 					if (invoker.Amount > 1)
 					{
 						bool success; Actor a;
-						[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2, 5, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
+
+						double sinp = sin(pitch);
+						double cosp = cos(pitch);
+
+						double XVel = 3 + ((player.cmd.buttons & BT_SPEED ? 15 : 5) * (CheckInventory("PowerStrength", 0) ? 3 : 1)) * cosp;
+						double YVel = -(vel.x * sin(angle) + vel.y * cos(angle));
+						double ZVel = (10 * -sinp) * (CheckInventory("PowerStrength", 0) ? 2 : 1);
+
+						[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, YVel, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
 						a.SetShade(player.GetColor());
 						Handler.Beacons.Push(HDBeacon(a));
 						invoker.Amount--;
@@ -219,6 +227,7 @@ class HDBeacon : HDUPK
 		Radius 12;
 		HDUPK.PickupType "HDTeleporter";
 		HDUPK.PickupMessage "Picked up a portable teleporter.";
+		HDUPK.MaxUnitAmount 5;
 	}
 
 	States

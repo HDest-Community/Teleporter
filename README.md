@@ -4,6 +4,7 @@
 - Use + Use Item: Next beacon.
 - Zoom + Use + Use Item: Previous beacon.
 - Zoom + Use Item: Drop a portable teleporter in beacon mode.
+- Sprint + Zoom + Use Item: Same as above but yeet the teleporter.
 
 ### Notes
 ---
