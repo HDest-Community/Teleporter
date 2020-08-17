@@ -16,16 +16,21 @@ class HDTeleportHandler : EventHandler
 
 		if (Alive && e.Name ~== "HDT_ListBeacons")
 		{
-			int BeaconCount = Beacons.Size();
-			if (BeaconCount > 0)
+			int BeaconCount = 0;
+			string BeaconList = "";
+			for (int i = 0; i < Beacons.Size(); ++i)
 			{
-				string str = String.Format("You have %i beacons active:", BeaconCount);
-				for (int i = 0; i < BeaconCount; ++i)
+				if (Beacons[i])
 				{
 					vector3 BeaconPos = Beacons[i].pos;
-					str = String.Format("%s\nBeacon %i at %i, %i, %i", str, i + 1, BeaconPos.x, BeaconPos.y, BeaconPos.z);
+					BeaconList = String.Format("%sBeacon %i at %i, %i, %i\n", BeaconList, i + 1, BeaconPos.x, BeaconPos.y, BeaconPos.z);
+					BeaconCount++;
 				}
-				plr.A_Log(str);
+			}
+			if (BeaconCount > 0)
+			{
+				string FinalString = String.Format("You have %i beacon%s active:\n%s", BeaconCount, (BeaconCount > 1 ? "s" : ""), BeaconList);
+				plr.A_Log(FinalString);
 			}
 			else
 			{
