@@ -30,29 +30,30 @@ class HDTeleportHandler : EventHandler
 			if (BeaconCount > 0)
 			{
 				string FinalString = String.Format("You have %i beacon%s active:\n%s", BeaconCount, (BeaconCount > 1 ? "s" : ""), BeaconList);
-				plr.A_Log(FinalString);
+				plr.A_Log(FinalString, true);
 			}
 			else
 			{
-				plr.A_Log("You have no beacons active.");
+				plr.A_Log("You have no beacons active.", true);
 			}
 		}
 	}
 
-	void AddBeacon(HDBeacon beacon)
+	int AddBeacon(HDBeacon beacon)
 	{
 		// [Ace] See if any of the previous beacons slots are empty. If not, push a new beacon. If they are, put them there.
-		// All this prevents indices from getting all shifted around when someone picks up a beacon.
+		// All this does is it prevents indices from getting all shifted around when someone picks up a beacon.
 		for (int i = 0; i < Beacons.Size(); ++i)
 		{
 			if (!Beacons[i])
 			{
 				Beacons[i] = beacon;
-				return;
+				return i;
 			}
 		}
 
 		Beacons.Push(beacon);
+		return Beacons.Size() - 1;
 	}
 
 	override void WorldThingSpawned(WorldEvent e)
@@ -175,14 +176,16 @@ class HDTeleporter : HDPickup
 					[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, YVel, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
 					a.SetShade(player.GetColor());
 
-					Handler.AddBeacon(HDBeacon(a));
+					int PlacedIndex = Handler.AddBeacon(HDBeacon(a)) + 1;
+					A_Log(String.Format("%s placed a beacon near (%i, %i, %i) with index %i.", player.GetUserName(), pos.x, pos.y, pos.z, PlacedIndex));
+
 					invoker.Amount--;
 					return false;
 				}
 
 				if (!invoker.IsValidBeacon())
 				{
-					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.");
+					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.", true);
 					return false;
 				}
 
@@ -190,14 +193,14 @@ class HDTeleporter : HDPickup
 				GetFullBatteryIndices(BatteryIndices);
 				if (BatteryIndices.Size() < BatteriesToCronch)
 				{
-					A_Log("You need a full battery to do that.");
+					A_Log("You need a full battery to do that.", true);
 					return false;
 				}
 
 				let Beacon = Handler.Beacons[invoker.BeaconIndex];
 				if (!Beacon.Armed)
 				{
-					A_Log("Beacon is not armed.");
+					A_Log("Beacon is not armed.", true);
 					return false;
 				}
 
@@ -216,7 +219,7 @@ class HDTeleporter : HDPickup
 				}
 				else
 				{
-					A_Log("Destination is blocked.");
+					A_Log("Destination is blocked.", true);
 				}
 
 				return false;
