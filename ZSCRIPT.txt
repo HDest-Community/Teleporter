@@ -34,6 +34,22 @@ class HDTeleportHandler : EventHandler
 		}
 	}
 
+	void AddBeacon(HDBeacon beacon)
+	{
+		// [Ace] See if any of the previous beacons slots are empty. If not, push a new beacon. If they are, put them there.
+		// All this prevents indices from getting all shifted around when someone picks up a beacon.
+		for (int i = 0; i < Beacons.Size(); ++i)
+		{
+			if (!Beacons[i])
+			{
+				Beacons[i] = beacon;
+				return;
+			}
+		}
+
+		Beacons.Push(beacon);
+	}
+
 	override void WorldThingSpawned(WorldEvent e)
 	{
 		let TheItem = HDBattery(e.Thing);
@@ -56,15 +72,15 @@ class HDTeleporter : HDPickup
 	override int GetSbarNum(int flags)
 	{
 		let HDHud = HDStatusBar(StatusBar);
-		HDHud.SavedColour = IsValidIndex() ? Font.CR_GREEN : Font.CR_SAPPHIRE;
+		HDHud.SavedColour = IsValidBeacon() ? Font.CR_GREEN : Font.CR_SAPPHIRE;
 
 		return BeaconIndex + 1;
 	}
 
-	private bool IsValidIndex() const
+	private bool IsValidBeacon() const
 	{
 		let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
-		return BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size();
+		return BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size() && Handler.Beacons[BeaconIndex];
 	}
 
 	private action void GetFullBatteryIndices(out Array<int> indices)
@@ -153,12 +169,13 @@ class HDTeleporter : HDPickup
 
 					[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, YVel, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
 					a.SetShade(player.GetColor());
-					Handler.Beacons.Push(HDBeacon(a));
+
+					Handler.AddBeacon(HDBeacon(a));
 					invoker.Amount--;
 					return false;
 				}
 
-				if (!invoker.IsValidIndex())
+				if (!invoker.IsValidBeacon())
 				{
 					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.");
 					return false;
@@ -205,21 +222,6 @@ class HDTeleporter : HDPickup
 
 class HDBeacon : HDUPK
 {
-	override void OnDestroy()
-	{
-		let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
-		if (Handler)
-		{
-			int ArrayIndex = Handler.Beacons.Find(self);
-			if (ArrayIndex != Handler.Beacons.Size())
-			{
-				Handler.Beacons.Delete(ArrayIndex);
-			}
-		}
-
-		Super.OnDestroy();
-	}
-
 	private void EmitParticles(double height)
 	{
 		for (double i = 0; i < height; i += height / 32)
