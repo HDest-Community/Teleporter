@@ -287,6 +287,7 @@ class HDBeacon : HDUPK
 						DynLight.Args[3] = int(StartHeight * 2);
 					}
 				}
+				A_StartSound("HDTeleporter/Idle", 7, CHANF_NOSTOP | CHANF_LOOP, 0.20);
 				EmitParticles(StartHeight);
 			}
 			Loop;

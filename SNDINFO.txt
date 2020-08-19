@@ -1,1 +1,2 @@
 HDTeleporter/Teleport HDTLPORT
+HDTeleporter/Idle HDTLIDLE
