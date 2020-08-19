@@ -16,6 +16,7 @@ class HDTeleportHandler : EventHandler
 
 		if (Alive && e.Name ~== "HDT_ListBeacons")
 		{
+			static const string Directions[] = { "West", "South-West", "South", "South-East", "East", "North-East", "North", "North-West" };
 			int BeaconCount = 0;
 			string BeaconList = "";
 			for (int i = 0; i < Beacons.Size(); ++i)
@@ -23,7 +24,8 @@ class HDTeleportHandler : EventHandler
 				if (Beacons[i])
 				{
 					vector3 BeaconPos = Beacons[i].pos;
-					BeaconList = String.Format("%sBeacon %i at %i, %i, %i\n", BeaconList, i + 1, BeaconPos.x, BeaconPos.y, BeaconPos.z);
+					double a = (180 + plr.AngleTo(Beacons[i]) + 22.5) % 360;
+					BeaconList = String.Format("%sBeacon %i at %i, %i, %i. Relative direction: %s.\n", BeaconList, i + 1, BeaconPos.x, BeaconPos.y, BeaconPos.z, Directions[int(a / 45)]);
 					BeaconCount++;
 				}
 			}
