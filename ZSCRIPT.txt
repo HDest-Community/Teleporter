@@ -172,11 +172,11 @@ class HDTeleporter : HDPickup
 					double cosp = cos(pitch);
 
 					double XVel = 3 + ((player.cmd.buttons & BT_SPEED ? 15 : 2) * (CheckInventory("PowerStrength", 0) ? 3 : 1)) * cosp;
-					double YVel = -(vel.x * sin(angle) + vel.y * cos(angle));
 					double ZVel = (10 * -sinp) * (CheckInventory("PowerStrength", 0) ? 2 : 1);
 
-					[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, YVel, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
+					[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, 0, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
 					a.SetShade(player.GetColor());
+					a.vel += vel;
 
 					int PlacedIndex = Handler.AddBeacon(HDBeacon(a)) + 1;
 					A_Log(String.Format("%s placed a beacon near (%i, %i, %i) with index %i.", player.GetUserName(), pos.x, pos.y, pos.z, PlacedIndex));
