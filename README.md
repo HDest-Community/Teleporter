@@ -8,5 +8,5 @@
 
 ### Notes
 ---
-- Teleporters are only found in backpacks at the moment. They are also sold by the [Merchant](https://gitlab.com/accensi/hd-merchant) if you have that loaded.
+- Teleporters are only found in backpacks at the moment. They are also sold by the [Merchant](https://gitlab.com/accensi/hd-addons/merchant) if you have that loaded.
 - The loadout code for the teleporter is `ptp`.
