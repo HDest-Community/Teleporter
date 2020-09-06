@@ -130,7 +130,7 @@ class HDTeleporter : HDPickup
 		+HDPICKUP.CHEATNOGIVE
 		+HDPICKUP.NOTINPOCKETS
 		+INVENTORY.INVBAR
-		HDPickup.Bulk 65;
+		HDPickup.Bulk 50;
 		HDPickup.RefID "ptp";
 		Inventory.MaxAmount 5;
 		Inventory.Icon "TPRTZ0";
