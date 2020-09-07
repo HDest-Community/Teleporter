@@ -80,49 +80,68 @@ class HDTeleporter : HDPickup
 	override int GetSbarNum(int flags)
 	{
 		let HDHud = HDStatusBar(StatusBar);
-		HDHud.SavedColour = IsValidBeacon() ? Font.CR_GREEN : Font.CR_SAPPHIRE;
 
+		int Col = Font.CR_SAPPHIRE;
+		HDBeacon SelBeacon = GetSelectedBeacon();
+		if (SelBeacon)
+		{
+			HDBattery Battery = HDBattery(owner.FindInventory("HDBattery"));
+			if (Battery)
+			{
+				int Cost = GetTeleportationCost(owner.Distance3D(SelBeacon));
+
+				int BatteryIndex, BatteryCharge;
+				[BatteryIndex, BatteryCharge] = GetLowestBattery(Battery, Cost);
+
+				Col = BatteryCharge >= Cost ? Font.CR_GREEN : Font.CR_RED;
+			}
+			else
+			{
+				Col = Font.CR_RED;
+			}
+		}
+
+		HDHud.SavedColour = col;
 		return BeaconIndex + 1;
 	}
 
-	private bool IsValidBeacon() const
+	private clearscope HDBeacon GetSelectedBeacon()
 	{
 		let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
-		return BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size() && Handler.Beacons[BeaconIndex];
+		if (BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size())
+		{
+			return Handler.Beacons[BeaconIndex];
+		}
+		return null;
 	}
 
-	private action void GetFullBatteryIndices(out Array<int> indices)
+	private clearscope int, int GetLowestBattery(HDBattery stack, int minCharge) const
 	{
-		indices.Clear();
-
-		let Battery = HDBattery(FindInventory("HDBattery"));
-		if (Battery)
+		if (stack)
 		{
-			for (int i = 0; i < Battery.Mags.Size(); ++i)
+			bool FoundAtLeastOne = false;
+			int Batteries = stack.Mags.Size();
+			int LowestIndex = Batteries - 1, LowestCharge = stack.MaxPerUnit;
+			for (int i = LowestIndex; i >= 0; --i)
 			{
-				if (Battery.Mags[i] == Battery.MaxPerUnit)
+				if (Batteries == 1 || stack.Mags[i] > minCharge && stack.Mags[i] < LowestCharge)
 				{
-					indices.Push(i);
+					LowestIndex = i;
+					LowestCharge = stack.Mags[i];
 				}
 			}
+
+			return LowestIndex, LowestCharge;
 		}
+
+		return -1, 0;
 	}
 
-	// [Ace] This only depletes them now, but I like how "cronch" sounds so I'll keep it.
-	private action void A_CronchBatteries(Array<int> indices, int maxCronch)
+	private clearscope int GetTeleportationCost(double dist) const
 	{
-		let Battery = HDBattery(FindInventory("HDBattery"));
-		if (Battery)
-		{
-			for (int i = 0; i < indices.Size() && maxCronch > 0; ++i)
-			{
-				Battery.Mags[indices[i]] = 0;
-				maxCronch--;
-			}
-		}
+		return 1 + floor(dist / (42 * 5));
 	}
 
-	const BatteriesToCronch = 1;
 	private int BeaconIndex; // [Ace] Zero-based internally, but not on the HUD.
 
 	Default
@@ -185,28 +204,37 @@ class HDTeleporter : HDPickup
 					return false;
 				}
 
-				if (!invoker.IsValidBeacon())
+				HDBeacon SelBeacon = invoker.GetSelectedBeacon();
+				if (!SelBeacon)
 				{
 					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.", true);
 					return false;
 				}
 
-				Array<int> BatteryIndices;
-				GetFullBatteryIndices(BatteryIndices);
-				if (BatteryIndices.Size() < BatteriesToCronch)
+				let Battery = HDBattery(FindInventory("HDBattery"));
+				if (!Battery)
 				{
-					A_Log("You need a full battery to do that.", true);
+					A_Log("No batteries found.", true);
 					return false;
 				}
 
-				let Beacon = Handler.Beacons[invoker.BeaconIndex];
-				if (!Beacon.Armed)
+				int Cost = invoker.GetTeleportationCost(Distance3D(SelBeacon));
+				int BatteryIndex, BatteryCharge;
+				[BatteryIndex, BatteryCharge] = invoker.GetLowestBattery(Battery, Cost);
+
+				if (Cost > BatteryCharge)
+				{
+					A_Log("Insufficient charge.", true);
+					return false;
+				}
+
+				if (!SelBeacon.Armed)
 				{
 					A_Log("Beacon is not armed.", true);
 					return false;
 				}
 
-				if (Warp(Beacon, flags: WARPF_USECALLERANGLE))
+				if (Warp(SelBeacon, flags: WARPF_USECALLERANGLE))
 				{
 					for (int i = 0; i < 360; ++i)
 					{
@@ -217,7 +245,7 @@ class HDTeleporter : HDPickup
 						A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
 					}
 					A_PlaySound("HDTeleporter/Teleport", 20);
-					A_CronchBatteries(BatteryIndices, BatteriesToCronch);
+					Battery.Mags[BatteryIndex] -= Cost;
 				}
 				else
 				{
