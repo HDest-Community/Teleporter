@@ -119,8 +119,7 @@ class HDTeleporter : HDPickup
 	{
 		if (stack)
 		{
-			int Batteries = stack.Mags.Size();
-			int LowestIndex = Batteries - 1;
+			int LowestIndex = stack.Mags.Size() - 1;
 			int LowestCharge = stack.MaxPerUnit;
 			for (int i = LowestIndex; i >= 0; --i)
 			{
