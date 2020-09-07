@@ -139,7 +139,7 @@ class HDTeleporter : HDPickup
 
 	private clearscope int GetTeleportationCost(double dist) const
 	{
-		return 1 + floor(dist / (42 * 5));
+		return 1 + int(dist / (42 * 5));
 	}
 
 	private int BeaconIndex; // [Ace] Zero-based internally, but not on the HUD.
