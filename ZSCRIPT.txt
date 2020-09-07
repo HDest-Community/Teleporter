@@ -115,23 +115,23 @@ class HDTeleporter : HDPickup
 		return null;
 	}
 
-	private clearscope int, int GetLowestBattery(HDBattery stack, int minCharge) const
+	private clearscope int, int GetLowestBattery(HDBattery stack, int minCharge)
 	{
 		if (stack)
 		{
-			bool FoundAtLeastOne = false;
 			int Batteries = stack.Mags.Size();
-			int LowestIndex = Batteries - 1, LowestCharge = stack.MaxPerUnit;
+			int LowestIndex = Batteries - 1;
+			int LowestCharge = stack.MaxPerUnit;
 			for (int i = LowestIndex; i >= 0; --i)
 			{
-				if (Batteries == 1 || stack.Mags[i] > minCharge && stack.Mags[i] < LowestCharge)
+				if (stack.Mags[i] >= minCharge && stack.Mags[i] <= LowestCharge)
 				{
 					LowestIndex = i;
 					LowestCharge = stack.Mags[i];
 				}
 			}
 
-			return LowestIndex, LowestCharge;
+			return LowestIndex, stack.Mags[LowestIndex];
 		}
 
 		return -1, 0;
