@@ -261,9 +261,9 @@ class HDBeacon : HDUPK
 {
 	private void EmitParticles(double height)
 	{
-		for (double i = 0; i < height; i += height / 32)
+		for (double i = 0; i < height; i += height / 32.0)
 		{
-			A_SpawnParticle(fillcolor, SPF_FULLBRIGHT, 1,  8 + i ** 1.18, 0, 0, 0, 3 + i * 3, startalphaf: 0.1);
+			A_SpawnParticle(fillcolor, SPF_FULLBRIGHT, 1,  8 + i ** 1.18, 0, 0, 0, 3 + i * 3, startalphaf: 0.50 * (1.0 - i / height));
 		}
 	}
 
