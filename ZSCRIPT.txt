@@ -77,6 +77,21 @@ class HDTeleporter : HDPickup
 		Super.BeginPlay();
 	}
 
+	override void DoEffect()
+	{
+		if (FovShift > 0.05)
+		{
+			FovShift = FovShift * 0.94;
+			owner.player.FOV = OldFov + FovShift;
+		}
+		else if (FovShift > 0)
+		{
+			owner.player.FOV = OldFov;
+		}
+
+		Super.DoEffect();
+	}
+
 	override int GetSbarNum(int flags)
 	{
 		let HDHud = HDStatusBar(StatusBar);
@@ -142,6 +157,8 @@ class HDTeleporter : HDPickup
 	}
 
 	private int BeaconIndex; // [Ace] Zero-based internally, but not on the HUD.
+	private double FovShift;
+	private double OldFov;
 
 	Default
 	{
@@ -243,6 +260,8 @@ class HDTeleporter : HDPickup
 						}
 						A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
 					}
+					invoker.OldFov = player.FOV;
+					invoker.FovShift += 60;
 					A_PlaySound("HDTeleporter/Teleport", 20);
 					Battery.Mags[BatteryIndex] -= Cost;
 				}
