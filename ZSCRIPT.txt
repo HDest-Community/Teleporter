@@ -145,7 +145,12 @@ class HDTeleporter : HDPickup
 				}
 			}
 
-			return LowestIndex, stack.Mags[LowestIndex];
+			// [Ace] Do a final check to see if the battery fulfills the conditions.
+			// If there is only one battery and the charge is < minCharge, the loop above won't do much.
+			if (stack.Mags[LowestIndex] >= minCharge)
+			{
+				return LowestIndex, stack.Mags[LowestIndex];
+			}
 		}
 
 		return -1, 0;
