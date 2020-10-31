@@ -265,6 +265,13 @@ class HDTeleporter : HDPickup
 						}
 						A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
 					}
+					// [Ace] Take whatever you're holding with you.
+					let Fists = HDFist(player.ReadyWeapon);
+					if (Fists && Fists.Grabbed)
+					{
+						Fists.Grabbed.Warp(SelBeacon, radius + 12, angle: angle, flags: WARPF_ABSOLUTEANGLE);
+					}
+
 					invoker.OldFov = player.FOV;
 					invoker.FovShift += 60;
 					A_PlaySound("HDTeleporter/Teleport", 20);
