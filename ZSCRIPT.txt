@@ -252,7 +252,7 @@ class HDTeleporter : HDPickup
 					let Fists = HDFist(player.ReadyWeapon);
 					if (Fists && Fists.Grabbed)
 					{
-						Fists.Grabbed.Warp(SelBeacon, radius + 12, angle: angle, flags: WARPF_ABSOLUTEANGLE);
+						Fists.Grabbed.Warp(SelBeacon, radius + Fists.Grabbed.Radius + 4, angle: angle, flags: WARPF_ABSOLUTEANGLE);
 					}
 
 					A_PlaySound("HDTeleporter/Teleport", 20);
