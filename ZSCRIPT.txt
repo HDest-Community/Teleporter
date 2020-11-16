@@ -1,379 +1,467 @@
 version "4.0"
 
-class HDTeleportHandler : EventHandler
+class HDTeleporterHandler : StaticEventHandler
 {
-	Array<HDBeacon> Beacons;
-
-	override void NetworkProcess(ConsoleEvent e)
+	override void CheckReplacement(ReplaceEvent e)
 	{
-		let plr = HDPlayerPawn(players[e.Player].mo);
-		if (!plr)
+		if (!e.Replacement)
 		{
 			return;
 		}
 
-		bool Alive = plr.Health > 0;
-
-		if (Alive && e.Name ~== "HDT_ListBeacons")
+		switch (e.Replacement.GetClassName())
 		{
-			static const string Directions[] = { "West", "South-West", "South", "South-East", "East", "North-East", "North", "North-West" };
-			int BeaconCount = 0;
-			string BeaconList = "";
-			for (int i = 0; i < Beacons.Size(); ++i)
-			{
-				if (Beacons[i])
+			case 'CellPackReplacer':
+				if (random[telerand]() <= 16)
 				{
-					vector3 BeaconPos = Beacons[i].pos;
-					double a = (180 + plr.AngleTo(Beacons[i]) + 22.5) % 360;
-					BeaconList = String.Format("%sBeacon %i at %i, %i, %i. Relative direction: %s.\n", BeaconList, i + 1, BeaconPos.x, BeaconPos.y, BeaconPos.z, Directions[int(a / 45)]);
-					BeaconCount++;
+					e.Replacement = "RiftGrenadeStack";
 				}
-			}
-			if (BeaconCount > 0)
-			{
-				string FinalString = String.Format("You have %i beacon%s active:\n%s", BeaconCount, (BeaconCount > 1 ? "s" : ""), BeaconList);
-				plr.A_Log(FinalString, true);
-			}
-			else
-			{
-				plr.A_Log("You have no beacons active.", true);
-			}
-		}
-	}
-
-	int AddBeacon(HDBeacon beacon)
-	{
-		// [Ace] See if any of the previous beacons slots are empty. If not, push a new beacon. If they are, put them there.
-		// All this does is it prevents indices from getting all shifted around when someone picks up a beacon.
-		for (int i = 0; i < Beacons.Size(); ++i)
-		{
-			if (!Beacons[i])
-			{
-				Beacons[i] = beacon;
-				return i;
-			}
-		}
-
-		Beacons.Push(beacon);
-		return Beacons.Size() - 1;
-	}
-
-	override void WorldThingSpawned(WorldEvent e)
-	{
-		let TheItem = HDBattery(e.Thing);
-		if (TheItem)
-		{
-			TheItem.ItemsThatUseThis.Push("HDTeleporter");
+				break;
 		}
 	}
 }
 
-class HDTeleporter : HDPickup
+class HDTeleporter : HDWeapon
 {
-	override void BeginPlay()
+	override string GetHelpText()
 	{
-		BeaconIndex = -1;
-
-		Super.BeginPlay();
+		return WEPHELP_FIRE.."  Teleport to nearest rift";
 	}
 
-	override int GetSbarNum(int flags)
-	{
-		let HDHud = HDStatusBar(StatusBar);
-
-		int Col = Font.CR_SAPPHIRE;
-		HDBeacon SelBeacon = GetSelectedBeacon();
-		if (SelBeacon)
-		{
-			HDBattery Battery = HDBattery(owner.FindInventory("HDBattery"));
-			if (Battery)
-			{
-				int Cost = GetTeleportationCost(owner.Distance3D(SelBeacon));
-
-				int BatteryIndex, BatteryCharge;
-				[BatteryIndex, BatteryCharge] = GetLowestBattery(Battery, Cost);
-
-				Col = BatteryCharge >= Cost ? Font.CR_GREEN : Font.CR_RED;
-			}
-			else
-			{
-				Col = Font.CR_RED;
-			}
-		}
-
-		HDHud.SavedColour = col;
-		return BeaconIndex + 1;
-	}
-
-	private clearscope HDBeacon GetSelectedBeacon()
-	{
-		let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
-		if (BeaconIndex > -1 && BeaconIndex < Handler.Beacons.Size())
-		{
-			return Handler.Beacons[BeaconIndex];
-		}
-		return null;
-	}
-
-	private clearscope int, int GetLowestBattery(HDBattery stack, int minCharge)
-	{
-		if (stack)
-		{
-			int LowestIndex = stack.Mags.Size() - 1;
-			int LowestCharge = stack.MaxPerUnit;
-			for (int i = LowestIndex; i >= 0; --i)
-			{
-				if (stack.Mags[i] >= minCharge && stack.Mags[i] <= LowestCharge)
-				{
-					LowestIndex = i;
-					LowestCharge = stack.Mags[i];
-				}
-			}
-
-			// [Ace] Do a final check to see if the battery fulfills the conditions.
-			// If there is only one battery and the charge is < minCharge, the loop above won't do much.
-			if (stack.Mags[LowestIndex] >= minCharge)
-			{
-				return LowestIndex, stack.Mags[LowestIndex];
-			}
-		}
-
-		return -1, 0;
-	}
-
-	private clearscope int GetTeleportationCost(double dist) const
-	{
-		return 1 + int(dist / (42 * 7.5));
-	}
-
-	private int BeaconIndex; // [Ace] Zero-based internally, but not on the HUD.
+	override bool AddSpareWeapon(actor newowner) { return AddSpareWeaponRegular(newowner); }
+	override HDWeapon GetSpareWeapon(actor newowner, bool reverse, bool doselect) {return GetSpareWeaponRegular(newowner, reverse, doselect); }
+	override double GunMass() { return 0; }
+	override double WeaponBulk() { return 30; }
+	override string, double GetPickupSprite() { return "TPRTZ0", 1.0; }
 
 	Default
 	{
-		+HDPICKUP.CHEATNOGIVE
-		+HDPICKUP.NOTINPOCKETS
+		Scale 0.5;
+		+WEAPON.WIMPY_WEAPON
 		+INVENTORY.INVBAR
-		HDPickup.Bulk 50;
-		HDPickup.RefID "ptp";
-		Inventory.MaxAmount 5;
+		+HDWEAPON.FITSINBACKPACK
+		HDWeapon.RefID "ptp";
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
 		Tag "Portable Teleporter";
 	}
 
-	States
-	{
-		Spawn:
-			TPRT A -1;
-			Stop;
-		Use:
-			TNT1 A 0
-			{
-				let Handler = HDTeleportHandler(EventHandler.Find("HDTeleportHandler"));
-				if (!Handler)
-				{
-					return false;
-				}
-
-				if (player.cmd.buttons & BT_USE)
-				{
-					if (player.cmd.buttons & BT_ZOOM && invoker.BeaconIndex > -1)
-					{
-						invoker.BeaconIndex--;
-					}
-					else
-					{
-						invoker.BeaconIndex++;
-					}
-					return false;
-				}
-				else if (player.cmd.buttons & BT_ZOOM)
-				{
-					bool success; Actor a;
-
-					double sinp = sin(pitch);
-					double cosp = cos(pitch);
-
-					double XVel = 3 + ((player.cmd.buttons & BT_SPEED ? 15 : 2) * (CheckInventory("PowerStrength", 0) ? 3 : 1)) * cosp;
-					double ZVel = (10 * -sinp) * (CheckInventory("PowerStrength", 0) ? 2 : 1);
-
-					[success, a] = A_SpawnItemEx("HDBeacon", 0, 0, height / 2 + 4, XVel, 0, ZVel, flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
-					a.SetShade(player.GetColor());
-					a.vel += vel;
-
-					int PlacedIndex = Handler.AddBeacon(HDBeacon(a)) + 1;
-					A_Log(String.Format("%s placed a beacon near (%i, %i, %i) with index %i.", player.GetUserName(), pos.x, pos.y, pos.z, PlacedIndex));
-
-					invoker.Amount--;
-					return false;
-				}
-
-				HDBeacon SelBeacon = invoker.GetSelectedBeacon();
-				if (!SelBeacon)
-				{
-					A_Log("Invalid index. Use 'listbeacons' in console for a list of active beacons.", true);
-					return false;
-				}
-
-				let Battery = HDBattery(FindInventory("HDBattery"));
-				if (!Battery)
-				{
-					A_Log("No batteries found.", true);
-					return false;
-				}
-
-				int Cost = invoker.GetTeleportationCost(Distance3D(SelBeacon));
-				int BatteryIndex, BatteryCharge;
-				[BatteryIndex, BatteryCharge] = invoker.GetLowestBattery(Battery, Cost);
-
-				if (Cost > BatteryCharge)
-				{
-					A_Log("Insufficient charge.", true);
-					return false;
-				}
-
-				if (!SelBeacon.Armed)
-				{
-					A_Log("Beacon is not armed.", true);
-					return false;
-				}
-
-				if (Warp(SelBeacon, flags: WARPF_USECALLERANGLE))
-				{
-					for (int i = 0; i < 360; ++i)
-					{
-						if (!random(0, 1))
-						{
-							A_SpawnParticle(player.GetColor(), SPF_RELATIVE, random(35, 70), random(2, 4), i, random(8, 48), 0, frandom(0, height), 0, 0, frandom(0.5, 3), 0, 0, frandom(-0.05, 0));
-						}
-						A_SpawnParticle(player.GetColor(), SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
-					}
-					// [Ace] Take whatever you're holding with you.
-					let Fists = HDFist(player.ReadyWeapon);
-					if (Fists && Fists.Grabbed)
-					{
-						Fists.Grabbed.Warp(SelBeacon, radius + Fists.Grabbed.Radius + 4, angle: angle, flags: WARPF_ABSOLUTEANGLE);
-					}
-
-					A_PlaySound("HDTeleporter/Teleport", 20);
-					Battery.Mags[BatteryIndex] -= Cost;
-				}
-				else
-				{
-					A_Log("Destination is blocked.", true);
-				}
-
-				return false;
-			}
-			Stop;
-	}
-}
-
-class HDBeacon : HDUPK
-{
-	private void EmitParticles(double height)
-	{
-		for (double i = 0; i < height; i += height / 32.0)
-		{
-			A_SpawnParticle(fillcolor, SPF_FULLBRIGHT, 1,  8 + i ** 1.18, 0, 0, 0, 3 + i * 3, startalphaf: 0.50 * (1.0 - i / height));
-		}
-	}
-
-	private PointLight DynLight;
-	private double StartHeight;
-	bool Armed;
-
-	Default
-	{
-		Radius 12;
-		HDUPK.PickupType "HDTeleporter";
-		HDUPK.PickupMessage "Picked up a portable teleporter.";
-		HDUPK.MaxUnitAmount 5;
-	}
-
-	States
-	{
-		Spawn:
-			TPRT A 1
-			{
-				if (vel.length() < 0.1)
-				{
-					A_SpawnItemEx("HDBeaconMarker", flags: SXF_SETMASTER | SXF_TRANSFERTRANSLATION);
-					SetStateLabel("WindUp");
-				}
-			}
-			Loop;
-		WindUp:
-			TPRT BCDEFG 4;
-			TPRT CDEFG 4;
-			TPRT CDEFG 3;
-			TPRT CDEFG 2;
-			TPRT C 0
-			{
-				DynLight = PointLight(Spawn("HDBeaconLight"));
-				DynLight.master = self;
-				DynLight.Args[0] = fillcolor.r;
-				DynLight.Args[1] = fillcolor.g;
-				DynLight.Args[2] = fillcolor.b;
-				Armed = true;
-			}
-		Speen:
-			TPRT CCDDEEFFGG 1
-			{
-				if (StartHeight < 32)
-				{
-					StartHeight += 4;
-					if (DynLight)
-					{
-						DynLight.Args[3] = int(StartHeight * 2);
-					}
-				}
-				A_StartSound("HDTeleporter/Idle", 7, CHANF_NOSTOP | CHANF_LOOP, 0.20);
-				EmitParticles(StartHeight);
-			}
-			Loop;
-	}
-}
-
-class HDBeaconMarker : MapMarker
-{
-	override void Tick()
-	{
-		if (!master)
-		{
-			Destroy();
-			return;
-		}
-
-		Super.Tick();
-	}
-
-	Default
-	{
-		+INVISIBLE
-		+NOINTERACTION
-	}
+	private bool SafetyOff;
 
 	States
 	{
 		Spawn:
 			TPRT Z -1;
 			Stop;
+		Select0:
+			TPRT A 1 A_Raise(24);
+			Wait;
+		Deselect0:
+			TPRT C 0 { invoker.SafetyOff = false; }
+			TPRT C 1 A_Lower(32);
+			Wait;
+		Ready:
+			TPRT C 1
+			{
+				if (!invoker.SafetyOff)
+				{
+					invoker.SafetyOff = true;
+					SetWeaponState("FlickSafety");
+					return;
+				}
+				
+				A_WeaponReady();
+			}
+			Goto ReadyEnd;
+		FlickSafety:
+			TPRT A 2 A_StartSound("HDTeleporter/Safety", 10, volume: 0.5);
+			TPRT BC 2;
+			Goto Ready;
+		Fire:
+			TPRT C 1 A_StartSound("HDTeleporter/Button", 10, volume: 0.5);
+			TPRT D 1;
+			TPRT E 1
+			{
+				Actor OldTracer = tracer; // [Ace] Just in case.
+				CheckProximity("HDTeleporterRift", 65535, 1, CPXF_CLOSEST | CPXF_SETTRACER);
+				HDTeleporterRift Rift = HDTeleporterRift(tracer);
+				if (!Rift)
+				{
+					A_Log("No open rifts found.", true);
+					return;
+				}
+
+				if (Warp(Rift, 0, 0, -(height / 2), flags: WARPF_USECALLERANGLE))
+				{
+					for (int i = 0; i < 360; ++i)
+					{
+						if (!random(0, 1))
+						{
+							A_SpawnParticle(0x683e84, SPF_RELATIVE, random(20, 50), random(4, 6), i, random(8, 16), 0, frandom(0, height), random(4, 16), 0, frandom(-3, 3), 0, 0, frandom(-0.05, 0));
+						}
+						A_SpawnParticle(0x683e84, SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.3);
+					}
+					// [Ace] Take whatever you're holding with you. Provided you have enough space.
+					// [16.11.2020] No longer works because the teleporter was changed to be a weapon. Can't drag stuff while holding a gun out.
+					// let Fists = HDFist(player.ReadyWeapon);
+					// if (Fists && Fists.Grabbed)
+					// {
+					// 	Fists.Grabbed.Warp(Rift, radius + Fists.Grabbed.Radius + 8, angle: angle, flags: WARPF_ABSOLUTEANGLE);
+					// }
+
+					Rift.ReactionTime -= Rift.default.ReactionTime / 3;
+					A_PlaySound("HDTeleporter/Teleport", 11);
+				}
+				else
+				{
+					A_Log("Destination is blocked. Force-closing rift.", true);
+					Rift.Destroy();
+				}
+
+				tracer = OldTracer;
+			}
+			TPRT DC 1;
+			Goto Nope;
 	}
 }
 
-class HDBeaconLight : PointLight
+class HDTeleporterRift : HDActor // [Ace] Not sure how inheriting from this can backfire. It's used for A_HDBlast.
 {
-	override void Tick()
+	Default
 	{
-		if (!master)
+		ReactionTime 10500;
+		Radius 2;
+		Height 4;
+	}
+
+	States
+	{
+		Spawn:
+			RFTG # 0 NoDelay A_JumpIf(pos.z - floorz > 1, 2);
+			RFTG # 20 A_ChangeVelocity(0, 0, 12);
+			RFTG # 0
+			{
+				DistantNoise.Make(self, "world/tbfar");
+				DistantNoise.Make(self, "world/tbfar2", 2.0);
+				DistantQuaker.Quake(self, 5, 50, 2048, 8, 128, 256, 256);
+
+				DistantNoise.Make(self, "world/tbfar");
+				for(int i = 0; i < 3; ++i)
+				{
+					A_SpawnItemEx("WallChunker", frandom(-4 ,4), frandom(-4, 4), -4, flags:SXF_NOCHECKPOSITION | SXF_TRANSFERPOINTERS);
+				}
+				
+				A_StartSound("weapons/plascrack", 11);
+				A_StartSound("weapons/plascrack", 12);
+				A_StartSound("weapons/plascrack", 13);
+				A_StartSound("world/tbfar", 14);
+				A_StartSound("world/explode", 15);
+
+				A_Log(String.Format("A rift in space was opened near (%i, %i, %i).", pos.x, pos.y, pos.z));
+				bNOINTERACTION = true;
+				A_Stop();
+			}
+		SpawnLoop:
+			TNT1 A 1
+			{
+				for (int i = 0; i < 4; ++i)
+				{
+					int SpawnPitch = random(-80, 80);
+					int SpawnAngle = random(0, 359);
+					double sinp = sin(SpawnPitch);
+					double cosp = cos(SpawnPitch);
+					Color col = randompick(0x0f0b19, 0x171127, 0x201735);
+					double AgeFactor = max(0.1, (ReactionTime / double(default.ReactionTime)));
+					double SpawnDist = random(128, 192) * AgeFactor;
+					int Speed = -4;
+					double Acceleration = -0.05;
+					A_SpawnParticle(col, SPF_RELATIVE, int(35 * AgeFactor), frandom(2.0, 4.0), SpawnAngle, SpawnDist * cosp, 0, (SpawnDist * sinp) / 1.2, Speed * cosp, 0, (Speed * sinp) / 1.2, Acceleration * cosp, 0, (Acceleration * sinp) / 1.2);
+				}
+
+				A_SpawnItemEx("HDRiftSmoke", flags: SXF_SETMASTER);
+
+				if (--ReactionTime <= 0)
+				{
+					SetStateLabel("Death");
+					return;
+				}
+			}
+			Loop;
+	}
+}
+
+class HDRiftSmoke : Actor
+{
+	override void PostBeginPlay()
+	{
+		A_SetRoll(random(0, 359));
+		if (master)
 		{
-			Destroy();
-			return;
+			A_SetScale(max(0.05, frandom(0.20, 0.40) * (master.ReactionTime / double(master.default.ReactionTime))));
+		}
+		else
+		{
+			A_SetScale(0.05);
 		}
 
-		Warp(master, flags: WARPF_NOCHECKPOSITION);
+		Super.PostBeginPlay();
+	}
 
-		Super.Tick();
+	Default
+	{
+		+NOINTERACTION
+		+ROLLSPRITE
+		+FORCEXYBILLBOARD
+		RenderStyle "Shaded";
+	}
+
+	States
+	{
+		Spawn:
+			RFSM K 1
+			{
+				if (!random(0, 2))
+				{
+					SetShade(0x2c243d);
+				}
+				else if (!random(0, 2))
+				{
+					SetShade(0x181127);
+				}
+				else
+				{
+					SetShade(0x07060a);
+				}
+				A_FadeOut(0.12);
+				A_SetScale(Scale.X - 0.02);
+			}
 	}
 }
+
+class HDRiftGrenades : HDGrenadethrower
+{
+	Default
+	{
+		Weapon.SelectionOrder 1010;
+		Weapon.SlotPriority 1;
+		Weapon.SlotNumber 0;
+		Tag "Rift Grenades";
+		HDGrenadeThrower.AmmoType "HDRiftGrenadeAmmo";
+		HDGrenadeThrower.ThrowType "HDRiftGrenade";
+		HDGrenadeThrower.SpoonType "DoomBuilderCamera";
+		Inventory.Icon "RFTGA0";
+	}
+
+	override string GetHelpText()
+	{
+		if (WeaponStatus[0] & FRAGF_SPOONOFF)
+		{
+			return WEPHELP_FIRE.."  Wind up, release to throw";
+		}
+		return WEPHELP_FIRE.."  Twist top/wind up (release to throw)\n"
+		..WEPHELP_ALTFIRE.."  Twist top, again to arm grenade\n"
+		..WEPHELP_RELOAD.."  Abort/untwist top\n";
+	}
+	
+	override string, double GetPickupSprite() { return "RFTGA0", 0.7; }
+	override void DrawHUDStuff(HDStatusBar sb, HDWeapon hdw, HDPlayerPawn hpl)
+	{
+		if (sb.hudlevel == 1)
+		{
+			sb.DrawImage((WeaponStatus[0] & FRAGF_PINOUT) ? "RFTGF0" : "RFTGA0", (-52, -4), sb.DI_SCREEN_CENTER_BOTTOM, scale:(0.7, 0.7));
+			sb.DrawNum(hpl.CountInv("HDRiftGrenadeAmmo"), -45, -8, sb.DI_SCREEN_CENTER_BOTTOM);
+		}
+		sb.DrawWepNum(hpl.CountInv("HDRiftGrenadeAmmo"), (HDCONST_MAXPOCKETSPACE / ENC_FRAG));
+		sb.DrawWepNum(hdw.WeaponStatus[FRAGS_FORCE], 50, posy: -10, alwaysprecise: true);
+		
+		if(!(hdw.WeaponStatus[0] & FRAGF_SPOONOFF))
+		{
+			sb.DrawRect(-21, -19, 5, 4);
+			if(!(hdw.weaponstatus[0] & FRAGF_PINOUT))
+			{
+				sb.DrawRect(-25, -18, 3, 2);
+			}
+		}
+		else
+		{
+			int timer = hdw.WeaponStatus[FRAGS_TIMER];
+			if (timer % 3)
+			{
+				sb.DrawWepNum(140 - timer, 140, posy:  -15, alwaysprecise: true);
+			}
+		}
+	}
+	
+	override void ForceBasicAmmo()
+	{
+		owner.A_SetInventory("HDRiftGrenadeAmmo",1);
+	}
+	
+	States
+	{
+		DeselectInstant:
+			TNT1 A -1 A_TakeInventory("HDRiftGrenades", 1);
+			Stop;
+	}
+}
+
+class HDRiftGrenadeRoller : HDFragGrenadeRoller
+{
+	Default
+	{
+		Scale 0.5;
+		Obituary "%k's rift blew a hole in %o.";
+		Mass 50;
+		+ROLLSPRITE
+		+ROLLCENTER
+	}
+
+	States
+	{
+		Spawn:
+			RFTG BCDE 2 NoDelay
+			{
+				if (abs(vel.z - keeprolling.z) > 10)
+				{
+					A_StartSound("misc/fragknock",CHAN_BODY);
+				}
+				else if (floorz >= pos.z)
+				{
+					A_StartSound("misc/fragroll");
+				}
+				keeprolling = vel;
+				if(abs(vel.x) < 0.4 && abs(vel.y) < 0.4)
+				{
+					SetStateLabel("Death");
+				}
+				A_SetRoll(random(-45, 45));
+			}
+			Loop;
+		Bounce:
+			RFTG A 0
+			{
+				bMISSILE = false;
+				vel *= 0.3;
+			}
+			Goto Spawn2;
+		Death:
+			RFTG # 2
+			{
+				if(abs(vel.z - keeprolling.z) > 3)
+				{
+					A_StartSound("misc/fragknock", CHAN_BODY);
+					keeprolling = vel;
+				}
+				if (abs(vel.x) > 0.4 || abs(vel.y) > 0.4)
+				{
+					SetStateLabel("Spawn");
+				}
+			}
+			Wait;
+		Destroy:
+			RFTG # 1 A_SpawnItemEx("HDTeleporterRift", flags: SXF_TRANSFERSPRITEFRAME | SXF_TRANSFERSCALE);
+			Stop;
+	}
+}
+
+class HDRiftGrenade : HDFragGrenade
+{
+	Default
+	{
+		Scale 0.5;
+		Obituary "%k tried to telefrag %o. Unfortunately, that's not how telefragging works.";
+		HDFragGrenade.RollerType "HDRiftGrenadeRoller";
+		Mass 50;
+		+ROLLSPRITE
+		+ROLLCENTER
+		+FORCEPAIN
+	}
+
+	States
+	{
+		Spawn:
+			RFTG BCDE 2 A_SetRoll(frandom(-15.5, 15.5));
+			Loop;
+	}
+}
+
+class HDRiftGrenadeAmmo : HDAmmo
+{
+	override void AttachToOwner(Actor user)
+	{
+		user.GiveInventory("HDRiftGrenades", 1);
+		Super.AttachToOwner(user);
+	}
+
+	override void DetachFromOwner()
+	{
+		if(!(owner.player.ReadyWeapon is "HDRiftGrenades"))
+		{
+			owner.TakeInventory("HDRiftGrenades", 1);
+		}
+		Super.DetachFromOwner();
+	}
+
+	Default
+	{
+		Tag "Rift Grenade";
+		HDPickup.Bulk 25;
+		Inventory.MaxAmount 20;
+		Scale 0.4;
+		Inventory.Icon "RFTGA0";
+		HDPickup.RefID "rtg";
+		Inventory.PickupMessage "Picked up a rift grenade.";
+		Inventory.PickupSound "weapons/pocket";
+		+INVENTORY.KEEPDEPLETED
+	}
+
+	States
+	{
+		Spawn:
+			RFTG A -1;
+			Stop;
+	}
+}
+
+class RiftGrenadeStack : Actor
+{
+	States
+	{
+		Spawn:
+			TNT1 A 0 NoDelay
+			{
+				A_SpawnItemEx("HDRiftGrenadeAmmo", 8, 0, flags: SXF_NOCHECKPOSITION);
+				A_SpawnItemEx("HDRiftGrenadeAmmo", -8, 0, flags: SXF_NOCHECKPOSITION);
+				A_SpawnItemEx("HDRiftGrenadeAmmo", 0, 8, flags: SXF_NOCHECKPOSITION);
+				A_SpawnItemEx("HDRiftGrenadeAmmo", 0, -8, flags: SXF_NOCHECKPOSITION);
+			}
+			Stop;
+	}
+}
+
+// class HDRiftMarker : MapMarker
+// {
+// 	override void Tick()
+// 	{
+// 		if (!master)
+// 		{
+// 			Destroy();
+// 			return;
+// 		}
+
+// 		Super.Tick();
+// 	}
+
+// 	Default
+// 	{
+// 		+INVISIBLE
+// 		+NOINTERACTION
+// 	}
+
+// 	States
+// 	{
+// 		Spawn:
+// 			TPRT Z -1;
+// 			Stop;
+// 	}
+// }

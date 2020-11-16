@@ -1,2 +1,4 @@
 HDTeleporter/Teleport HDTLPORT
-HDTeleporter/Idle HDTLIDLE
+HDTeleporter/Button HDTLPBTN
+HDTeleporter/Safety HDTLPSFT
+HDTeleporter/Idle HDTLIDLE // [Ace] Unavailable atm.

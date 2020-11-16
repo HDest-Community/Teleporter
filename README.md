@@ -1,12 +1,11 @@
 ### Usage
 ---
-- Use Item: Teleport to placed beacon. You need a fully charged battery to do that. It will be depleted upon usage.
-- Use + Use Item: Next beacon.
-- Zoom + Use + Use Item: Previous beacon.
-- Zoom + Use Item: Drop a portable teleporter in beacon mode.
-- Sprint + Zoom + Use Item: Same as above but yeet the teleporter.
+- Use Item: Teleport to selected rift. This closes the rift.
+- Use + Use Item: Next rift.
+- Zoom + Use + Use Item: Previous rift.
 
 ### Notes
 ---
-- Teleporters are only found in backpacks at the moment. They are also sold by the [Merchant](https://gitlab.com/accensi/hd-addons/merchant) if you have that loaded.
+- Teleporters are only found in backpacks at the moment. The grenades themselves are found naturally in the world. Both are also sold by the [Merchant](https://gitlab.com/accensi/hd-addons/merchant) if you have that loaded.
 - The loadout code for the teleporter is `ptp`.
+- The loadout code for the rift grenades is `rtg`.

@@ -1,1 +1,1 @@
-alias "listbeacons" "netevent HDT_ListBeacons"
+alias "listrifts" "netevent HDT_ListRifts"
