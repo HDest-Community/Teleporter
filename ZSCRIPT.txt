@@ -129,7 +129,6 @@ class HDTeleporter : HDWeapon
 				HDTeleporterRift Rift = HDTeleporterRift(tracer);
 				if (!Rift || !Rift.Active)
 				{
-					A_Log("No open rifts found.", true);
 					return;
 				}
 
