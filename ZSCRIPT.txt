@@ -171,7 +171,7 @@ class HDTeleporterRift : HDActor // [Ace] Not sure how inheriting from this can 
 {
 	Default
 	{
-		ReactionTime 10500;
+		ReactionTime 35 * 60 * 15;
 		Radius 2;
 		Height 4;
 	}
