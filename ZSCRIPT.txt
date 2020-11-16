@@ -387,6 +387,8 @@ class HDRiftGrenade : HDFragGrenade
 
 class HDRiftGrenadeAmmo : HDAmmo
 {
+	override bool IsUsed() { return true; }
+
 	override void AttachToOwner(Actor user)
 	{
 		user.GiveInventory("HDRiftGrenades", 1);
