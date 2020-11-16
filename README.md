@@ -1,9 +1,3 @@
-### Usage
----
-- Use Item: Teleport to selected rift. This closes the rift.
-- Use + Use Item: Next rift.
-- Zoom + Use + Use Item: Previous rift.
-
 ### Notes
 ---
 - Teleporters are only found in backpacks at the moment. The grenades themselves are found naturally in the world. Both are also sold by the [Merchant](https://gitlab.com/accensi/hd-addons/merchant) if you have that loaded.
