@@ -19,6 +19,42 @@ class HDTeleporterHandler : StaticEventHandler
 				break;
 		}
 	}
+
+	override void NetworkProcess(ConsoleEvent e)
+	{
+		let plr = HDPlayerPawn(players[e.Player].mo);
+		if (!plr)
+		{
+			return;
+		}
+
+		bool Alive = plr.Health > 0;
+		if (Alive && e.Name ~== "HDT_ListRifts")
+		{
+			static const string Directions[] = { "West", "South-West", "South", "South-East", "East", "North-East", "North", "North-West" };
+			int RiftCount = 0;
+			string RiftList = "";
+
+			ThinkerIterator it = ThinkerIterator.Create("HDTeleporterRift", Thinker.STAT_DEFAULT);
+			Actor a;
+			while ((a = Actor(it.Next())))
+			{
+				vector3 RiftPos = a.pos;
+				double Angle = (180 + plr.AngleTo(a) + 22.5) % 360;
+				RiftList = String.Format("%sRift at %i, %i, %i. Relative direction: %s.\n", RiftList, RiftPos.x, RiftPos.y, RiftPos.z, Directions[int(Angle / 45)]);
+				RiftCount++;
+			}
+			if (RiftCount > 0)
+			{
+				string FinalString = String.Format("There %s %i open rift%s:\n%s", (RiftCount > 1 ? "are" : "is"), RiftCount, (RiftCount > 1 ? "s" : ""), RiftList);
+				plr.A_Log(FinalString, true);
+			}
+			else
+			{
+				plr.A_Log("There are no open rifts.", true);
+			}
+		}
+	}
 }
 
 class HDTeleporter : HDWeapon
