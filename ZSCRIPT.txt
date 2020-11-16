@@ -31,7 +31,7 @@ class HDTeleporter : HDWeapon
 	override bool AddSpareWeapon(actor newowner) { return AddSpareWeaponRegular(newowner); }
 	override HDWeapon GetSpareWeapon(actor newowner, bool reverse, bool doselect) {return GetSpareWeaponRegular(newowner, reverse, doselect); }
 	override double GunMass() { return 0; }
-	override double WeaponBulk() { return 30; }
+	override double WeaponBulk() { return 10; }
 	override string, double GetPickupSprite() { return "TPRTZ0", 1.0; }
 
 	Default
