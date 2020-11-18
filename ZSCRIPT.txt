@@ -85,37 +85,26 @@ class HDTeleporter : HDWeapon
 		Tag "Portable Teleporter";
 	}
 
-	private bool SafetyOff;
-
 	States
 	{
 		Spawn:
 			TPRT Z -1;
 			Stop;
 		Select0:
-			TPRT A 1 A_Raise(24);
+			TPRT AAA 1 A_Raise(24);
+			TPRT A 1
+			{
+				A_Raise(8);
+				A_StartSound("HDTeleporter/Safety", 10, volume: 0.5);
+			}
+			TPRT BBCC 1 A_Raise(8);
 			Wait;
 		Deselect0:
-			TPRT C 0 { invoker.SafetyOff = false; }
 			TPRT C 1 A_Lower(32);
 			Wait;
 		Ready:
-			TPRT C 1
-			{
-				if (!invoker.SafetyOff)
-				{
-					invoker.SafetyOff = true;
-					SetWeaponState("FlickSafety");
-					return;
-				}
-				
-				A_WeaponReady();
-			}
+			TPRT C 1 A_WeaponReady();
 			Goto ReadyEnd;
-		FlickSafety:
-			TPRT A 2 A_StartSound("HDTeleporter/Safety", 10, volume: 0.5);
-			TPRT BC 2;
-			Goto Ready;
 		Fire:
 			TPRT C 1
 			{
