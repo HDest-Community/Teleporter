@@ -41,7 +41,10 @@ class HDTeleporterHandler : StaticEventHandler
 			{
 				vector3 RiftPos = a.pos;
 				double Angle = (180 + plr.AngleTo(a) + 22.5) % 360;
-				RiftList = String.Format("%sRift at %i, %i, %i. Relative direction: %s.\n", RiftList, RiftPos.x, RiftPos.y, RiftPos.z, Directions[int(Angle / 45)]);
+				int TotalSeconds = a.ReactionTime / 35 + random(0, 30);
+				int MinutesLeft = TotalSeconds / 60;
+				int SecondsLeft = TotalSeconds % 60;
+				RiftList = String.Format("%sRift at %i, %i, %i. Relative direction: %s. Estimated time until collapse: %i:%02i.\n", RiftList, RiftPos.x, RiftPos.y, RiftPos.z, Directions[int(Angle / 45)], MinutesLeft, SecondsLeft);
 				RiftCount++;
 			}
 			if (RiftCount > 0)
