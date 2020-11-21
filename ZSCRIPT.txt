@@ -212,7 +212,7 @@ class HDTeleporterRift : HDActor // [Ace] Not sure how inheriting from this can 
 					double SpawnDist = random(128, 192) * AgeFactor;
 					int Speed = -4;
 					double Acceleration = -0.05;
-					A_SpawnParticle(col, SPF_RELATIVE, int(35 * AgeFactor), frandom(2.0, 4.0), SpawnAngle, SpawnDist * cosp, 0, (SpawnDist * sinp) / 1.2, Speed * cosp, 0, (Speed * sinp) / 1.2, Acceleration * cosp, 0, (Acceleration * sinp) / 1.2);
+					A_SpawnParticle(col, SPF_RELATIVE, int(35 * AgeFactor), frandom(5.0, 8.0), SpawnAngle, SpawnDist * cosp, 0, (SpawnDist * sinp) / 1.2, Speed * cosp, 0, (Speed * sinp) / 1.2, Acceleration * cosp, 0, (Acceleration * sinp) / 1.2);
 				}
 
 				A_SpawnItemEx("HDRiftSmoke", flags: SXF_SETMASTER);
