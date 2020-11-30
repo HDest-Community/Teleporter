@@ -280,7 +280,7 @@ class HDRiftGrenades : HDGrenadethrower
 	Default
 	{
 		Weapon.SelectionOrder 1010;
-		Weapon.SlotPriority 1;
+		Weapon.SlotPriority 0.1;
 		Weapon.SlotNumber 0;
 		Tag "Rift Grenades";
 		HDGrenadeThrower.AmmoType "HDRiftGrenadeAmmo";
