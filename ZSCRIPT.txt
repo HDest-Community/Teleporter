@@ -174,7 +174,7 @@ class HDTeleporterRift : HDActor // [Ace] Not sure how inheriting from this can 
 	{
 		Spawn:
 			RFTG # 0 NoDelay A_JumpIf(pos.z - floorz > 1, 2);
-			RFTG # 20 A_ChangeVelocity(0, 0, 12);
+			RFTG # 10 A_ChangeVelocity(0, 0, 8);
 			RFTG # 0
 			{
 				DistantNoise.Make(self, "world/tbfar");
@@ -360,7 +360,7 @@ class HDRiftGrenadeRoller : HDFragGrenadeRoller
 			{
 				if (abs(vel.z - keeprolling.z) > 10)
 				{
-					A_StartSound("misc/fragknock",CHAN_BODY);
+					A_StartSound("misc/fragknock", CHAN_BODY);
 				}
 				else if (floorz >= pos.z)
 				{
