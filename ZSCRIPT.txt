@@ -126,6 +126,7 @@ class HDTeleporter : HDWeapon
 
 				if (Warp(Rift, 0, 0, -(height / 2), flags: WARPF_USECALLERANGLE))
 				{
+					A_ChangeVelocity(2, 0, 0, CVF_RELATIVE);
 					for (int i = 0; i < 360; ++i)
 					{
 						if (!random(0, 1))
