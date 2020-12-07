@@ -60,7 +60,7 @@ class HDTeleporterHandler : StaticEventHandler
 	}
 }
 
-class HDTeleporter : HDWeapon
+class HDTeleporter : HDFist // [Ace] What could go wrong?
 {
 	override string GetHelpText()
 	{
@@ -103,8 +103,19 @@ class HDTeleporter : HDWeapon
 			TPRT C 1 A_Lower(32);
 			Wait;
 		Ready:
-			TPRT C 1 A_WeaponReady();
+			TPRT C 1 A_WeaponReady(WRF_ALL);
 			Goto ReadyEnd;
+		Firemode:
+			TPRT C 0 A_ClearGrabbing();
+		GrabHold:
+			TPRT C 1 A_CheckGrabbing();
+			TPRT C 0 A_JumpIf(PressingFire(), "Fire");
+			TPRT C 0 A_JumpIf(PressingFiremode(), "GrabHold");
+			Goto Nope;
+		Reload: // [Ace] Disable these. They won't be used.
+			Stop;
+		AltFire:
+			Stop;
 		Fire:
 			TPRT C 1
 			{
@@ -135,13 +146,14 @@ class HDTeleporter : HDWeapon
 						}
 						A_SpawnParticle(0x392249, SPF_RELATIVE, 15, 16, i, 0, 0, 0, 20, 0, 0, -0.8, sizestep: 0.6);
 					}
+
 					// [Ace] Take whatever you're holding with you. Provided you have enough space.
-					// [16.11.2020] No longer works because the teleporter was changed to be a weapon. Can't drag stuff while holding a gun out.
-					// let Fists = HDFist(player.ReadyWeapon);
-					// if (Fists && Fists.Grabbed)
-					// {
-					// 	Fists.Grabbed.Warp(Rift, radius + Fists.Grabbed.Radius + 8, angle: angle, flags: WARPF_ABSOLUTEANGLE);
-					// }
+					let Teleporter = HDTeleporter(player.ReadyWeapon);
+					if (Teleporter && Teleporter.Grabbed)
+					{
+						Teleporter.Grabbed.Warp(Rift, radius + Teleporter.Grabbed.Radius + 8, angle: angle, flags: WARPF_ABSOLUTEANGLE);
+						Teleporter.Grabbed.A_ChangeVelocity(2, 0, 0, CVF_RELATIVE);
+					}
 
 					Rift.ReactionTime -= Rift.default.ReactionTime / 4;
 					A_PlaySound("HDTeleporter/Teleport", 11);
