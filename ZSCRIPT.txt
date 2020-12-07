@@ -80,6 +80,7 @@ class HDTeleporter : HDFist // [Ace] What could go wrong?
 		+INVENTORY.INVBAR
 		+HDWEAPON.FITSINBACKPACK
 		HDWeapon.RefID "ptp";
+		Weapon.SlotNumber -1;
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
 		Tag "Portable Teleporter";
