@@ -67,6 +67,11 @@ class HDTeleporter : HDFist // [Ace] What could go wrong?
 		return WEPHELP_FIRE.."  Teleport to nearest rift";
 	}
 
+	override Inventory CreateTossable(int amount)
+	{
+		return HDWeapon.CreateTossable(amount);
+	}
+
 	override bool AddSpareWeapon(actor newowner) { return AddSpareWeaponRegular(newowner); }
 	override HDWeapon GetSpareWeapon(actor newowner, bool reverse, bool doselect) {return GetSpareWeaponRegular(newowner, reverse, doselect); }
 	override double GunMass() { return 0; }
@@ -79,6 +84,9 @@ class HDTeleporter : HDFist // [Ace] What could go wrong?
 		+WEAPON.WIMPY_WEAPON
 		+INVENTORY.INVBAR
 		+HDWEAPON.FITSINBACKPACK
+		-HDWEAPON.DONTDISARM
+		-HDWEAPON.DONTNULL
+		-NOINTERACTION
 		HDWeapon.RefID "ptp";
 		Weapon.SlotNumber -1;
 		Inventory.Icon "TPRTZ0";
