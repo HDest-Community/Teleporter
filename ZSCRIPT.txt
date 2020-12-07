@@ -160,11 +160,11 @@ class HDTeleporter : HDWeapon
 	}
 }
 
-class HDTeleporterRift : HDActor // [Ace] Not sure how inheriting from this can backfire. It's used for A_HDBlast.
+class HDTeleporterRift : Actor
 {
 	Default
 	{
-		ReactionTime 35 * 60 * 15;
+		ReactionTime 35 * 60 * 30;
 		Radius 2;
 		Height 4;
 	}
