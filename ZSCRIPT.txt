@@ -60,16 +60,11 @@ class HDTeleporterHandler : StaticEventHandler
 	}
 }
 
-class HDTeleporter : HDFist // [Ace] What could go wrong?
+class HDTeleporter : HDWeaponGrabber
 {
 	override string GetHelpText()
 	{
 		return WEPHELP_FIRE.."  Teleport to nearest rift";
-	}
-
-	override Inventory CreateTossable(int amount)
-	{
-		return HDWeapon.CreateTossable(amount);
 	}
 
 	override bool AddSpareWeapon(actor newowner) { return AddSpareWeaponRegular(newowner); }
@@ -84,11 +79,7 @@ class HDTeleporter : HDFist // [Ace] What could go wrong?
 		+WEAPON.WIMPY_WEAPON
 		+INVENTORY.INVBAR
 		+HDWEAPON.FITSINBACKPACK
-		-HDWEAPON.DONTDISARM
-		-HDWEAPON.DONTNULL
-		-NOINTERACTION
 		HDWeapon.RefID "ptp";
-		Weapon.SlotNumber -1;
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
 		Tag "Portable Teleporter";
