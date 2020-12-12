@@ -153,6 +153,7 @@ class HDTeleporter : HDWeaponGrabber
 					{
 						Teleporter.Grabbed.Warp(Rift, radius + Teleporter.Grabbed.Radius + 8, angle: angle, flags: WARPF_ABSOLUTEANGLE);
 						Teleporter.Grabbed.A_ChangeVelocity(2, 0, 0, CVF_RELATIVE);
+						A_ClearGrabbing();
 					}
 
 					Rift.ReactionTime -= Rift.default.ReactionTime / 4;
