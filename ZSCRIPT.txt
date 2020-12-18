@@ -117,7 +117,9 @@ class HDTeleporter : HDWeaponGrabber
 		GrabHold:
 			TPRT C 1 A_CheckGrabbing();
 			TPRT C 0 A_JumpIf(PressingFire(), "Fire");
+			TPRT C 0 A_JumpIf(PressingAltfire(), "AltFire");
 			TPRT C 0 A_JumpIf(PressingFiremode(), "GrabHold");
+			TPRT C 0 A_ClearGrabbing();
 			Goto Nope;
 		Reload: // [Ace] Disable this. It won't be used.
 			Stop;
