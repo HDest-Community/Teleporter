@@ -101,7 +101,8 @@ class HDTeleporter : HDWeaponGrabber
 	override string GetHelpText()
 	{
 		return WEPHELP_FIRE.."  Teleport to nearest rift\n"
-		..WEPHELP_ALTFIRE.."  Teleport to farthest rift";
+		..WEPHELP_ALTFIRE.."  Teleport to farthest rift\n"
+		..WEPHELP_FIREMODE.."  Grab/drag";
 	}
 
 	override bool AddSpareWeapon(actor newowner) { return AddSpareWeaponRegular(newowner); }
