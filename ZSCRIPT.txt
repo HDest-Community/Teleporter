@@ -1,6 +1,6 @@
 version "4.0"
 
-class HDTeleporterHandler : StaticEventHandler
+class HDTeleporterHandler : EventHandler
 {
 	override void CheckReplacement(ReplaceEvent e)
 	{
