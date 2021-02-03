@@ -89,7 +89,7 @@ class HDTeleporter : HDWeaponGrabber
 		}
 
 		plr.A_StartSound("weapons/pocket", 20);
-		if (++TimesFumbled >= 10)
+		if (++TimesFumbled >= 7)
 		{
 			A_TeleportToRift(0);
 			TimesFumbled = 0;
