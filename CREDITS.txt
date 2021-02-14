@@ -1,3 +1,3 @@
 Code: Accensus
-Sprites: Thunder grenade sprites edited from the FreeDoom armor bonus, further edits by Accensus. // [Ace] Credits copied verbatim from Melonades.
+Sprites: PillowBlaster for the switch thingy. What a god.
 Sounds: Teleportation sound is from Half Life 2' roller mine.
