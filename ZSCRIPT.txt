@@ -125,7 +125,7 @@ class HDTeleporter : HDWeaponGrabber
 		let plr = HDPlayerPawn(invoker.owner);
 		Actor OldTracer = plr.tracer; // [Ace] Just in case.
 		
-		int ThrustAngle = plr.AngleTo(rf);
+		double ThrustAngle = plr.AngleTo(rf);
 		if (plr.Warp(rf, 0, 0, -(plr.height / 2), flags: WARPF_USECALLERANGLE | WARPF_NOCHECKPOSITION))
 		{
 			plr.A_ChangeVelocity(8 * cos(ThrustAngle), 8 * sin(ThrustAngle), 0);
