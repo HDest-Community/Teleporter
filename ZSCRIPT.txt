@@ -24,7 +24,7 @@ class HDTeleporter : HDWeaponGrabber
 {
 	enum TeleporterFlags
 	{
-		TF_JustUnload
+		TF_JustUnload = 1
 	}
 	enum TeleporterProperties
 	{
@@ -282,7 +282,7 @@ class HDTeleporter : HDWeaponGrabber
 		Reload:
 			TPRT C 0
 			{
-				invoker.WeaponStatus[TProp_Flags] &=~ TF_JustUnload;
+				invoker.WeaponStatus[TProp_Flags] &= ~TF_JustUnload;
 				bool NoMags = HDMagAmmo.NothingLoaded(self, "HDBattery");
 				if (invoker.WeaponStatus[TProp_Battery] >= 20 || NoMags)
 				{
@@ -318,7 +318,8 @@ class HDTeleporter : HDWeaponGrabber
 					HDMagAmmo.SpawnMag(self, "HDBattery", Bat);
 					SetWeaponState("BatteryOut");
 				}
-				else{
+				else
+				{
 					HDMagAmmo.GiveMag(self, "HDBattery", Bat);
 					A_StartSound("weapons/pocket", 9);
 					SetWeaponState("PocketMag");
@@ -333,10 +334,6 @@ class HDTeleporter : HDWeaponGrabber
 				if (invoker.WeaponStatus[TProp_Flags] & TF_JustUnload)
 				{
 					SetWeaponState("ReloadEnd");
-				}
-				else
-				{
-					SetWeaponState("LoadMag");
 				}
 			}
 		LoadMag:
