@@ -74,6 +74,8 @@ class HDTeleporter : HDWeaponGrabber
 	{
 		return WEPHELP_FIRE.."  Open rift and teleport\n"
 		..WEPHELP_ALTFIRE.."  Open rift/teleport to rift\n"
+		..WEPHELP_RELOADRELOAD
+		..WEPHELP_UNLOADUNLOAD
 		..WEPHELP_FIREMODE.."  Grab/drag";
 	}
 
@@ -198,7 +200,7 @@ class HDTeleporter : HDWeaponGrabber
 		HDWeapon.RefID "ptp";
 		Inventory.Icon "TPRTZ0";
 		Inventory.PickupMessage "Picked up a portable teleporter.";
-		Tag "Portable Teleporter";
+		Tag "Portable teleporter";
 	}
 
 	States
