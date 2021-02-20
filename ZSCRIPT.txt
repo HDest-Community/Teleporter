@@ -101,6 +101,10 @@ class HDTeleporter : HDWeaponGrabber
 			sb.DrawNum(hpl.CountInv("HDBattery"), -46, -8, sb.DI_SCREEN_CENTER_BOTTOM);
 		}
 
+		if (Rift)
+		{
+			sb.DrawRect(-16, -13, -3, 3);
+		}
 		int BatteryCharge = hdw.WeaponStatus[TProp_Battery];
 		if (BatteryCharge > 0)
 		{
