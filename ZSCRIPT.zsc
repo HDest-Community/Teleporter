@@ -29,7 +29,14 @@ class HDTeleporter : HDWeaponGrabber
 	enum TeleporterProperties
 	{
 		TProp_Flags,
-		TProp_Battery
+		TProp_Battery,
+		TProp_Charge
+	}
+	enum RiftFlags
+	{
+		RF_INSTANT = 1,
+		RF_FREE = 2,
+		RF_DESTROY = 4
 	}
 
 	override void DoEffect()
@@ -55,14 +62,14 @@ class HDTeleporter : HDWeaponGrabber
 		plr.A_StartSound("weapons/pocket", 20);
 		if (++TimesFumbled >= 7)
 		{
-			if (Rift && WeaponStatus[TProp_Battery] >= ActivationCost)
+			if (Rift && WeaponStatus[TProp_Charge] >= ActivationCost)
 			{
-				A_TeleportToRift(Rift, true);
+				A_TeleportToRift(Rift, RF_DESTROY);
 			}
-			else if (!Rift && WeaponStatus[TProp_Battery] >= ActivationCost * 2)
+			else if (!Rift && WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 			{
-				A_OpenRift(42 * 20, true);
-				A_TeleportToRift(Rift, false);
+				A_OpenRift(42 * 20, RF_INSTANT);
+				A_TeleportToRift(Rift);
 			}
 			TimesFumbled = 0;
 		}
@@ -74,6 +81,7 @@ class HDTeleporter : HDWeaponGrabber
 	{
 		return WEPHELP_FIRE.."  Open rift and teleport\n"
 		..WEPHELP_ALTFIRE.."  Open rift/teleport to rift\n"
+		..WEPHELP_ZOOM.."+"..WEPHELP_FIRE.." (hold)  Charge teleporter\n"
 		..WEPHELP_RELOADRELOAD
 		..WEPHELP_UNLOADUNLOAD
 		..WEPHELP_FIREMODE.."  Grab/drag";
@@ -103,24 +111,31 @@ class HDTeleporter : HDWeaponGrabber
 
 		if (Rift)
 		{
-			sb.DrawRect(-16, -13, -3, 3);
+			sb.DrawRect(-16, -14, -3, 3);
 		}
-		int BatteryCharge = hdw.WeaponStatus[TProp_Battery];
-		if (BatteryCharge > 0)
+
+		int charge = hdw.WeaponStatus[TProp_Charge];
+		sb.DrawWepNum(charge, MaxCharge, posy: -9);
+		sb.Fill(Color(255, 32, 192, 32), -16 + -8, -11, 2, 2, sb.DI_SCREEN_CENTER_BOTTOM);
+		sb.Fill(Color(255, 192, 32, 32), -16 + -15, -11, -2, 2, sb.DI_SCREEN_CENTER_BOTTOM);
+
+		int bat = hdw.WeaponStatus[TProp_Battery];
+		if (bat > 0)
 		{
-			sb.DrawWepNum(BatteryCharge, 20);
+			sb.DrawWepNum(bat, 20);
 		}
-		else if (BatteryCharge == 0)
+		else if (bat == 0)
 		{
-			sb.DrawString(sb.mAmountFont, "00000", (-16, -10), sb.DI_TEXT_ALIGN_RIGHT | sb.DI_TRANSLATABLE | sb.DI_SCREEN_CENTER_BOTTOM, Font.CR_DARKGRAY);
+			sb.DrawString(sb.mAmountFont, "00000", (-16, -7), sb.DI_TEXT_ALIGN_RIGHT | sb.DI_TRANSLATABLE | sb.DI_SCREEN_CENTER_BOTTOM, Font.CR_DARKGRAY);
 		}
 	}
 	override void InitializeWepStats(bool idfa)
 	{
 		WeaponStatus[TProp_Battery] = 20;
+		WeaponStatus[TProp_Charge] = 20;
 	}
 
-	private action void A_TeleportToRift(HDTeleporterRift rf, bool destroyRift)
+	private action void A_TeleportToRift(HDTeleporterRift rf, int flags = 0, double velMult = 1.0)
 	{
 		A_WeaponOffset(1, 3, WOF_ADD); // [Ace] Should this even be here?
 		if (!rf)
@@ -134,7 +149,7 @@ class HDTeleporter : HDWeaponGrabber
 		double ThrustAngle = plr.AngleTo(rf);
 		if (plr.Warp(rf, 0, 0, -(plr.height / 2), flags: WARPF_USECALLERANGLE | WARPF_NOCHECKPOSITION))
 		{
-			plr.A_ChangeVelocity(8 * cos(ThrustAngle), 8 * sin(ThrustAngle), 0);
+			plr.A_ChangeVelocity(8 * cos(ThrustAngle) * velMult, 8 * sin(ThrustAngle) * velMult, 0);
 			for (int i = 0; i < 360; ++i)
 			{
 				if (!random(0, 1))
@@ -152,9 +167,9 @@ class HDTeleporter : HDWeaponGrabber
 				A_ClearGrabbing();
 			}
 
-			invoker.WeaponStatus[TProp_Battery] -= ActivationCost;
+			invoker.WeaponStatus[TProp_Charge] -= ActivationCost;
 			plr.burncount += 5;
-			if (destroyRift)
+			if (flags & RF_DESTROY)
 			{
 				rf.Destroy();
 			}
@@ -169,11 +184,11 @@ class HDTeleporter : HDWeaponGrabber
 		}
 	}
 
-	private action void A_OpenRift(int dist, bool instant)
+	private action void A_OpenRift(int dist, int flags = 0)
 	{
 		let plr = HDPlayerPawn(invoker.owner);
 		FLineTraceData Data;
-		for (int i = dist; i >= 16; i -= 16)
+		for (int i = max(16, dist); i >= 16; i -= 16)
 		{
 			plr.LineTrace(plr.angle, i, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 4, 0, 0, Data);
 			if (Data.HitType == Data.TRACE_HitNone)
@@ -183,17 +198,25 @@ class HDTeleporter : HDWeaponGrabber
 			}
 		}
 		invoker.Rift = HDTeleporterRift(Spawn("HDTeleporterRift", Data.HitLocation));
-		if (instant)
+		if (flags & RF_INSTANT)
 		{
-			invoker.Rift.Instant = instant;
+			invoker.Rift.Instant = true;
 		}
-		invoker.WeaponStatus[TProp_Battery] -= ActivationCost;
+		if (!(flags & RF_FREE))
+		{
+			invoker.WeaponStatus[TProp_Charge] -= ActivationCost;
+		}
 	}
 
 	const ActivationCost = 2;
+	const MaxCharge = 60;
 	private int Cooldown;
 	private int TimesFumbled;
 	private HDTeleporterRift Rift;
+	private int ChargeTicker;
+	private string LastLevel; // [Ace] Don't cycle teleporters or this info will be lost!
+	private bool GTFO;
+	private int CrackTicker;
 
 	Default
 	{
@@ -225,7 +248,11 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT C 1 A_Lower(32);
 			Wait;
 		Ready:
-			TPRT C 1 A_WeaponReady(WRF_ALL);
+			TPRT C 1
+			{
+				invoker.ChargeTicker = 0;
+				A_WeaponReady(WRF_ALL);
+			}
 			Goto ReadyEnd;
 		Firemode:
 			TPRT C 0 A_ClearGrabbing();
@@ -237,6 +264,7 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT C 0 A_ClearGrabbing();
 			Goto Nope;
 		Fire:
+			TPRT A 0 A_JumpIf(PressingZoom() && invoker.WeaponStatus[TProp_Battery] > 0, 'ChargeTeleporter');
 			TPRT C 1
 			{
 				invoker.bWEAPONBUSY = true;
@@ -246,11 +274,11 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT D 1 A_WeaponOffset(1, 6, WOF_ADD);
 			TPRT E 8
 			{
-				if (invoker.WeaponStatus[TProp_Battery] >= ActivationCost * 2)
+				if (invoker.WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 				{
 					HDTeleporterRift OldRift = invoker.Rift;
-					A_OpenRift(42 * 20, true);
-					A_TeleportToRift(invoker.Rift, false);
+					A_OpenRift(42 * 20, RF_INSTANT);
+					A_TeleportToRift(invoker.Rift);
 					invoker.Rift = OldRift;
 				}
 			}
@@ -267,20 +295,88 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT D 1 A_WeaponOffset(1, 6, WOF_ADD);
 			TPRT E 8
 			{
-				if (invoker.WeaponStatus[TProp_Battery] >= ActivationCost)
+				if (invoker.WeaponStatus[TProp_Charge] >= ActivationCost)
 				{
 					if (invoker.Rift)
 					{
-						A_TeleportToRift(invoker.Rift, true);
+						A_TeleportToRift(invoker.Rift, RF_DESTROY);
 					}
 					else
 					{
-						A_OpenRift(42 * 2, false);
+						A_OpenRift(42 * 2);
 					}
 				}
 			}
 			TPRT EDC 1 A_WeaponOffset(-1, -7, WOF_ADD);
 			TPRT C 0 { invoker.bWEAPONBUSY = false; }
+			Goto Nope;
+		ChargeTeleporter:
+			TPRT C 1
+			{
+				invoker.bWEAPONBUSY = true;
+				A_StartSound("HDTeleporter/Button", 10, volume: 0.5);
+				A_WeaponOffset(1, 12, WOF_ADD);
+			}
+			TPRT D 1 A_WeaponOffset(1, 6, WOF_ADD);
+		GTFOLoop:
+			TPRT A 0 A_JumpIf(!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && invoker.WeaponStatus[TProp_Battery] < 20, 'LetGo');
+			TPRT E 1
+			{
+				if (++invoker.ChargeTicker > 105)
+				{
+					int toCharge = min(MaxCharge - invoker.WeaponStatus[TProp_Charge], invoker.WeaponStatus[TProp_Battery]);
+					invoker.WeaponStatus[TProp_Battery] -= toCharge;
+					
+					if (invoker.WeaponStatus[TProp_Charge] < MaxCharge)
+					{
+						invoker.WeaponStatus[TProp_Charge] += toCharge;
+					}
+					else if (invoker.WeaponStatus[TProp_Battery] >= 20 && !(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") || level.MapName ~== "LOTSAGUN" && invoker.LastLevel != "")
+					{
+						invoker.WeaponStatus[TProp_Battery] -= 20;
+						invoker.WeaponStatus[TProp_Charge] -= MaxCharge;
+						A_StartSound("weapons/plascrack", 11);
+						A_StartSound("weapons/plascrack", 12);
+						A_StartSound("world/tbfar", 14);
+						A_StartSound("world/explode", 15);
+						invoker.GTFO = true;
+					}
+
+					SetWeaponState('LetGo');
+					return;
+				}
+
+				double fac = invoker.ChargeTicker / 10.0;
+				double chfac = invoker.WeaponStatus[TProp_Charge] / double(MaxCharge);
+				A_MuzzleClimb(frandom(-fac, fac) * 0.3 * chfac, frandom(-fac, fac) * 0.3 * chfac);
+
+				if (++invoker.CrackTicker > 35 - 3 * fac)
+				{
+					invoker.CrackTicker = 0;
+					A_StartSound(invoker.WeaponStatus[TProp_Charge] < MaxCharge ? "misc/arczap" : "weapons/plascrack", 10);
+				}
+			}
+			Loop;
+		LetGo:
+			TPRT EDC 1 A_WeaponOffset(-1, -7, WOF_ADD);
+			TPRT C 0
+			{
+				invoker.bWEAPONBUSY = false;
+				if (invoker.GTFO)
+				{
+					invoker.GTFO = false;
+					if (!(level.MapName ~== "LOTSAGUN"))
+					{
+						invoker.LastLevel = level.MapName;
+						level.ChangeLevel("LOTSAGUN");
+					}
+					else
+					{
+						level.ChangeLevel(invoker.LastLevel);
+						invoker.LastLevel = "";
+					}
+				}
+			}
 			Goto Nope;
 
 		Reload:
@@ -390,7 +486,7 @@ class HDTeleporterRift : Actor
 				DistantNoise.Make(self, "world/tbfar2", 2.0);
 				DistantQuaker.Quake(self, 5, 50, 2048, 8, 128, 256, 256);
 
-				for(int i = 0; i < 3; ++i)
+				for (int i = 0; i < 3; ++i)
 				{
 					A_SpawnItemEx("WallChunker", frandom(-4 ,4), frandom(-4, 4), -4, flags:SXF_NOCHECKPOSITION | SXF_TRANSFERPOINTERS);
 				}
