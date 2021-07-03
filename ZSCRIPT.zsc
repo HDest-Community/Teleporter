@@ -342,10 +342,15 @@ class HDTeleporter : HDWeaponGrabber
 				A_WeaponOffset(1, 12, WOF_ADD);
 			}
 			TPRT D 1 A_WeaponOffset(1, 6, WOF_ADD);
-		GTFOLoop:
-			TPRT A 0 A_JumpIf(!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && invoker.WeaponStatus[TProp_Battery] < 20, 'LetGo');
+		ChargeLoop:
 			TPRT E 1
 			{
+				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && (invoker.WeaponStatus[TProp_Battery] < 20 || !CheckInventory('HDBlursphere', 1) || !CheckInventory("SquadSummoner", 1)))
+				{
+					SetWeaponState('LetGo');
+					return;
+				}
+
 				if (++invoker.ChargeTicker > 105)
 				{
 					int toCharge = min(MaxCharge - invoker.WeaponStatus[TProp_Charge], invoker.WeaponStatus[TProp_Battery]);
@@ -355,10 +360,12 @@ class HDTeleporter : HDWeaponGrabber
 					{
 						invoker.WeaponStatus[TProp_Charge] += toCharge;
 					}
-					else if (invoker.WeaponStatus[TProp_Battery] >= 20 && !(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != "")
+					else if (invoker.WeaponStatus[TProp_Battery] >= 20 && CheckInventory('HDBlursphere', 1) && CheckInventory("SquadSummoner", 1) && (!(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != ""))
 					{
 						invoker.WeaponStatus[TProp_Battery] -= 20;
 						invoker.WeaponStatus[TProp_Charge] -= MaxCharge;
+						A_TakeInventory("HDBlursphere", 1);
+						A_TakeInventory("SquadSummoner", 1);
 						A_StartSound("weapons/plascrack", 11);
 						A_StartSound("weapons/plascrack", 12);
 						A_StartSound("world/tbfar", 14);
