@@ -345,7 +345,11 @@ class HDTeleporter : HDWeaponGrabber
 		ChargeLoop:
 			TPRT E 1
 			{
-				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && (invoker.WeaponStatus[TProp_Battery] < 20 || !CheckInventory('HDBlursphere', 1) || !CheckInventory("SquadSummoner", 1)))
+				FLineTraceData data;
+				LineTrace(angle, 42 * 100, pitch, TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 6, data: data);
+
+				bool canSupercharge = invoker.WeaponStatus[TProp_Battery] >= 20 && CheckInventory('HDBlursphere', 1) && CheckInventory("SquadSummoner", 1) && (!(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") && TexMan.GetName(data.HitTexture) ~== "F_SKY1" || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != "");
+				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && !canSupercharge)
 				{
 					SetWeaponState('LetGo');
 					return;
@@ -360,7 +364,7 @@ class HDTeleporter : HDWeaponGrabber
 					{
 						invoker.WeaponStatus[TProp_Charge] += toCharge;
 					}
-					else if (invoker.WeaponStatus[TProp_Battery] >= 20 && CheckInventory('HDBlursphere', 1) && CheckInventory("SquadSummoner", 1) && (!(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != ""))
+					else if (canSupercharge)
 					{
 						invoker.WeaponStatus[TProp_Battery] -= 20;
 						invoker.WeaponStatus[TProp_Charge] -= MaxCharge;
