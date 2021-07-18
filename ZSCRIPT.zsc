@@ -135,7 +135,7 @@ class HDTeleporter : HDWeaponGrabber
 
 		if (Rift)
 		{
-			sb.DrawRect(-16, -14, -3, 3);
+			sb.DrawRect(-16, -15, -3, 3);
 		}
 
 		int charge = hdw.WeaponStatus[TProp_Charge];
