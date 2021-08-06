@@ -348,7 +348,8 @@ class HDTeleporter : HDWeaponGrabber
 				FLineTraceData data;
 				LineTrace(angle, 42 * 100, pitch, TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 6, data: data);
 
-				bool canSupercharge = invoker.WeaponStatus[TProp_Battery] >= 20 && CheckInventory('HDBlursphere', 1) && CheckInventory('WornRadsuit', 1) && CheckInventory("SquadSummoner", 1) && (!(level.MapName ~== "LOTSAGUN") && LevelInfo.MapExists("LOTSAGUN") && TexMan.GetName(data.HitTexture) ~== "F_SKY1" || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != "");
+				bool inReloadingRoom = level.MapName ~== "LOTSAGUN";
+				bool canSupercharge = invoker.WeaponStatus[TProp_Battery] >= 20 && (inReloadingRoom || CheckInventory('HDBlursphere', 1)) && CheckInventory('WornRadsuit', 1) && CheckInventory("SquadSummoner", 1) && (!inReloadingRoom && LevelInfo.MapExists("LOTSAGUN") && TexMan.GetName(data.HitTexture) ~== "F_SKY1" || level.MapName ~== "LOTSAGUN" && invoker.TeleThinker.LastLevel != "");
 				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && !canSupercharge)
 				{
 					SetWeaponState('LetGo');
@@ -368,7 +369,10 @@ class HDTeleporter : HDWeaponGrabber
 					{
 						invoker.WeaponStatus[TProp_Battery] -= 20;
 						invoker.WeaponStatus[TProp_Charge] -= MaxCharge;
-						A_TakeInventory("HDBlursphere", 1);
+						if (!inReloadingRoom)
+						{
+							A_TakeInventory("HDBlursphere", 1);
+						}
 						A_TakeInventory("SquadSummoner", 1);
 						A_TakeInventory("WornRadsuit", 1);
 						A_StartSound("weapons/plascrack", 11);
