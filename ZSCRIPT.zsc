@@ -92,7 +92,7 @@ class HDTeleporter : HDWeaponGrabber
 			}
 			else if (!Rift && WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 			{
-				A_OpenRift(42 * 20, RF_INSTANT);
+				A_OpenRift(HDCONST_ONEMETRE * 20, RF_INSTANT);
 				A_TeleportToRift(Rift);
 			}
 			TimesFumbled = 0;
@@ -301,7 +301,7 @@ class HDTeleporter : HDWeaponGrabber
 				if (invoker.WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 				{
 					HDTeleporterRift OldRift = invoker.Rift;
-					A_OpenRift(42 * 20, RF_INSTANT);
+					A_OpenRift(HDCONST_ONEMETRE * 20, RF_INSTANT);
 					A_TeleportToRift(invoker.Rift);
 					invoker.Rift = OldRift;
 				}
@@ -327,7 +327,7 @@ class HDTeleporter : HDWeaponGrabber
 					}
 					else
 					{
-						A_OpenRift(42 * 2);
+						A_OpenRift(HDCONST_ONEMETRE * 2);
 					}
 				}
 			}
@@ -346,7 +346,7 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT E 1
 			{
 				FLineTraceData data;
-				LineTrace(angle, 42 * 100, pitch, TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 6, data: data);
+				LineTrace(angle, HDCONST_ONEMETRE * 100, pitch, TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 6, data: data);
 
 				bool inReloadingRoom = level.MapName ~== "LOTSAGUN";
 				bool canSupercharge = invoker.WeaponStatus[TProp_Battery] >= 20 && (inReloadingRoom || CheckInventory('HDBlursphere', 1)) && CheckInventory('WornRadsuit', 1) && CheckInventory("SquadSummoner", 1) && (!inReloadingRoom && LevelInfo.MapExists("LOTSAGUN") && TexMan.GetName(data.HitTexture) ~== "F_SKY1" || inReloadingRoom && invoker.TeleThinker.LastLevel != "");
