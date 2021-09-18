@@ -208,7 +208,7 @@ class HDTeleporter : HDWeaponGrabber
 		}
 	}
 
-	private action void A_OpenRift(int dist, int flags = 0)
+	private action void A_OpenRift(double dist, int flags = 0)
 	{
 		let plr = HDPlayerPawn(invoker.owner);
 		FLineTraceData Data;
