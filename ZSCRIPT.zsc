@@ -212,7 +212,7 @@ class HDTeleporter : HDWeaponGrabber
 	{
 		let plr = HDPlayerPawn(invoker.owner);
 		FLineTraceData Data;
-		for (int i = max(16, dist); i >= 16; i -= 16)
+		for (double i = max(16, dist); i >= 16; i -= 16)
 		{
 			plr.LineTrace(plr.angle, i, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 4, 0, 0, Data);
 			if (Data.HitType == Data.TRACE_HitNone)
