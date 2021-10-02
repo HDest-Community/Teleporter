@@ -92,7 +92,7 @@ class HDTeleporter : HDWeaponGrabber
 			}
 			else if (!Rift && WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 			{
-				A_OpenRift(HDCONST_ONEMETRE * 20, RF_INSTANT);
+				A_OpenRift(HDCONST_ONEMETRE * (20 + 10 * (WeaponStatus[TProp_Charge] / 20)), RF_INSTANT);
 				A_TeleportToRift(Rift);
 			}
 			TimesFumbled = 0;
@@ -301,7 +301,7 @@ class HDTeleporter : HDWeaponGrabber
 				if (invoker.WeaponStatus[TProp_Charge] >= ActivationCost * 2)
 				{
 					HDTeleporterRift OldRift = invoker.Rift;
-					A_OpenRift(HDCONST_ONEMETRE * 20, RF_INSTANT);
+					A_OpenRift(HDCONST_ONEMETRE * (20 + 10 * (invoker.WeaponStatus[TProp_Charge] / 20)), RF_INSTANT);
 					A_TeleportToRift(invoker.Rift);
 					invoker.Rift = OldRift;
 				}
