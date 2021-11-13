@@ -214,10 +214,10 @@ class HDTeleporter : HDWeaponGrabber
 		FLineTraceData Data;
 		for (double i = max(16, dist); i >= 16; i -= 16)
 		{
-			plr.LineTrace(plr.angle, i, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 4, 0, 0, Data);
+			plr.LineTrace(plr.angle, i, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, plr.height - 4, 0, 0, Data);
 			if (Data.HitType == Data.TRACE_HitNone)
 			{
-				plr.LineTrace(plr.angle, i - 16, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, height - 4, 0, 0, Data);
+				plr.LineTrace(plr.angle, i - 16, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, plr.height - 4, 0, 0, Data);
 				break;
 			}
 		}
