@@ -211,17 +211,35 @@ class HDTeleporter : HDWeaponGrabber
 	private action void A_OpenRift(double dist, int flags = 0)
 	{
 		let plr = HDPlayerPawn(invoker.owner);
-		FLineTraceData Data;
-		for (double i = max(16, dist); i >= 16; i -= 16)
+		FLineTraceData data;
+
+		bool hit = plr.LineTrace(plr.angle, dist, plr.pitch, TRF_NOSKY | TRF_THRUBLOCK | TRF_THRUHITSCAN, plr.height - 4, 0, 0, data);
+		vector3 targetPos = data.HitLocation;
+
+		if (hit)
 		{
-			plr.LineTrace(plr.angle, i, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, plr.height - 4, 0, 0, Data);
-			if (Data.HitType == Data.TRACE_HitNone)
+			switch (data.HitType)
 			{
-				plr.LineTrace(plr.angle, i - 16, plr.pitch, TRF_NOSKY | TRF_THRUACTORS | TRF_THRUBLOCK | TRF_THRUHITSCAN, plr.height - 4, 0, 0, Data);
-				break;
+				case data.TRACE_HitActor:
+				{
+					double ang = data.HitActor.AngleTo(plr);
+					ang = round(ang / 90.0) * 90.0; // [Ace] Snap to 90 degrees because hitboxes in Doom don't rotate.
+					targetPos = data.HitActor.Vec3Angle(data.HitActor.radius + plr.radius * 2, ang);
+					break;
+				}
+				case data.TRACE_HitWall:
+				{
+					vector3 oldPos = plr.pos;
+					plr.SetXYZ(data.HitLocation);
+					// [Ace] Move the player perpendicularly to the angle of the wall to prevent getting stuck.
+					targetPos = plr.Vec3Angle(plr.radius * 2, VectorAngle(data.HitLine.delta.x, data.HitLine.delta.y) - 90);
+					plr.SetXYZ(oldPos);
+					break;
+				}
 			}
 		}
-		invoker.Rift = HDTeleporterRift(Spawn("HDTeleporterRift", Data.HitLocation));
+
+		invoker.Rift = HDTeleporterRift(Spawn("HDTeleporterRift", targetPos));
 		if (flags & RF_INSTANT)
 		{
 			invoker.Rift.Instant = true;
