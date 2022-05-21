@@ -391,7 +391,7 @@ class HDTeleporter : HDWeaponGrabber
 						{
 							A_TakeInventory("HDBlursphere", 1);
 						}
-						A_TakeInventory("SquadSummoner", 5);
+						A_TakeInventory("SquadSummoner", 7);
 						A_TakeInventory("WornRadsuit", 1);
 						A_StartSound("weapons/plascrack", 11);
 						A_StartSound("weapons/plascrack", 12);
