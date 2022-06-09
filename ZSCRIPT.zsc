@@ -306,7 +306,7 @@ class HDTeleporter : HDWeaponGrabber
 			TPRT C 0 A_ClearGrabbing();
 			Goto Nope;
 		Fire:
-			TPRT A 0 A_JumpIf(PressingZoom() && invoker.WeaponStatus[TProp_Battery] > 0, 'ChargeTeleporter');
+			TPRT A 0 A_JumpIf(PressingZoom(), 'ChargeTeleporter');
 			TPRT C 1
 			{
 				invoker.bWEAPONBUSY = true;
@@ -368,7 +368,7 @@ class HDTeleporter : HDWeaponGrabber
 
 				bool inReloadingRoom = level.MapName ~== "LOTSAGUN";
 				bool canSupercharge = invoker.WeaponStatus[TProp_Battery] >= 20 && (inReloadingRoom || CheckInventory('HDBlursphere', 1)) && CheckInventory('WornRadsuit', 1) && CheckInventory("SquadSummoner", 7) && (!inReloadingRoom && LevelInfo.MapExists("LOTSAGUN") && data.HitType == data.TRACE_HitNone || inReloadingRoom && invoker.TeleThinker.LastLevel != "");
-				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && !canSupercharge)
+				if (!PressingZoom() || !PressingFire() || invoker.WeaponStatus[TProp_Charge] == MaxCharge && !canSupercharge || invoker.WeaponStatus[TProp_Battery] <= 0)
 				{
 					SetWeaponState('LetGo');
 					return;
