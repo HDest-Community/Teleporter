@@ -1,6 +1,6 @@
 ### Notes
 ---
-- Teleporters can only be found in backpacks. They are also sold by the [Merchant](https://gitlab.com/accensi/hd-addons/merchant) if you have that loaded.
+- Teleporters can only be found in backpacks. They are also sold by the [Merchant](https://github.com/HDest-Community/Merchant) if you have that loaded.
 - The loadout code for the teleporter is `ptp`.
 - You can fumble for the teleporter while incapped if you mash the dedicated key. See the controls.
 - Fire will instantly teleport you 20m from where you're aiming. Watch out for the velocity boost!
